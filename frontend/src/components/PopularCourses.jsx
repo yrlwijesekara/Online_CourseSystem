@@ -21,7 +21,7 @@ const PopularCourses = () => {
       price: 140.00,
       duration: "2hr 35min",
       lectures: 20,
-      image: "/public/PopularCourses/p1.png",
+      image: "/PopularCourses/p1.png",
     },
     {
       id: 2,
@@ -31,7 +31,7 @@ const PopularCourses = () => {
       duration: "3hr 35min",
       lectures: 25,
   // ...existing code...
-  image: "/public/PopularCourses/p2.png",
+  image: "/PopularCourses/p2.png",
   isFree: true,
     },
     {
@@ -42,7 +42,7 @@ const PopularCourses = () => {
       duration: "2hr 35min",
       lectures: 20,
   // ...existing code...
-  image: "/public/PopularCourses/p3.png",
+  image: "/PopularCourses/p3.png",
     },
     {
       id: 4,
@@ -52,7 +52,7 @@ const PopularCourses = () => {
       duration: "4hr 35min",
       lectures: 30,
   // ...existing code...
-  image: "/public/PopularCourses/p4.png",
+  image: "/PopularCourses/p4.png",
     },
     {
       id: 5,
@@ -62,7 +62,7 @@ const PopularCourses = () => {
       duration: "3hr 35min",
       lectures: 25,
   // ...existing code...
-  image: "/public/PopularCourses/p5.png",
+  image: "/PopularCourses/p5.png",
     },
     {
       id: 6,
@@ -72,7 +72,7 @@ const PopularCourses = () => {
       duration: "2hr 35min",
       lectures: 20,
   // ...existing code...
-  image: "/public/PopularCourses/p6.png",
+  image: "/PopularCourses/p6.png",
 //   rating: "4.9 (22) | 1.4K Students",
     }
   ];
@@ -82,7 +82,7 @@ const PopularCourses = () => {
     : courses.filter(course => course.category === activeFilter);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -98,7 +98,7 @@ const PopularCourses = () => {
                 onClick={() => setActiveFilter(category)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                   activeFilter === category
-                    ? 'bg-teal-500 text-white shadow-lg'
+                    ? 'bg-green-500 text-white shadow-lg'
                     : 'bg-white text-gray-600 border border-gray-200 hover:border-teal-300 hover:text-teal-600'
                 }`}
               >
@@ -178,9 +178,9 @@ const PopularCourses = () => {
 
         {/* Explore All Courses Button */}
         <div className="text-center">
-          <button className="bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-gray-800 transition-colors duration-200 inline-flex items-center">
+          <button className="bg-white text-gray-900 border border-black px-8 py-4 rounded-full font-medium hover:bg-gray-200 transition-colors duration-200 inline-flex items-center">
             Explore All Courses
-            <span className="ml-2 bg-white text-gray-900 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+            <span className="ml-2 bg-black text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
               →
             </span>
           </button>
