@@ -1,6 +1,7 @@
 import './App.css'
 import PopularCourses from './components/PopularCourses'
 import SignInPage from './pages/SignInPage'
+import SignUpPage from './pages/SignUpPage';
 
 
 function App() {
@@ -9,7 +10,8 @@ function App() {
   return (
     <>
     {/* <PopularCourses/> */}
-    <SignInPage/>
+    {/* <SignInPage/> */}
+    <SignUpPage/>
       
     </>
   )
