@@ -82,7 +82,7 @@ const PopularCourses = () => {
     : courses.filter(course => course.category === activeFilter);
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-8 px-4"style={{ backgroundColor: '#F8F8F8' }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
