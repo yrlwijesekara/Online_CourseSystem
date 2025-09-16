@@ -51,10 +51,10 @@ const BestTalents = () => {
           </button>
         </div>
 
-        {/* Simple Talents Grid */}
+        {/* Staggered Talents Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {talents.map((talent) => (
-            <div key={talent.id} className="flex justify-center">
+            <div key={talent.id} className={`flex justify-center ${(talent.id === 2 || talent.id === 4) ? 'lg:transform lg:translate-y-12' : ''}`}>
               <div 
                 style={{ backgroundColor: talent.backgroundColor }}
                 className="rounded-full  w-auto h-auto max-w-xs overflow-hidden"
