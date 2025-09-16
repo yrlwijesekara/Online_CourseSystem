@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import Navbar from '../components/NavBar';
 import PopularCourses from '../components/PopularCourses';
 import BestTalents from '../components/BestTalents';
+import ReviewStudents from '../components/ReviewStudents';
 import Footer from '../components/Footer';
 import { ArrowUpRight } from 'lucide-react';
 
-const CoursePage = () => {
+const CoursePage = ({ navigateTo }) => {
   // State to track the active filter category
   const [activeFilter, setActiveFilter] = useState('All Categories');
   
@@ -111,7 +112,7 @@ const CoursePage = () => {
   return (
     <>
       <div className="course-page">
-          <Navbar />
+          <Navbar navigateTo={navigateTo} currentPage="course" />
 
           {/* Background with gradient effect */}
           <div className="relative w-full min-h-screen md:h-[848px] overflow-hidden bg-gradient-to-r from-green-100 to-pink-100 pb-10 md:pb-0">

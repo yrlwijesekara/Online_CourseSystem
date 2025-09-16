@@ -3,12 +3,13 @@ import { FaTwitter, FaFacebookF, FaLinkedinIn, FaInstagram } from 'react-icons/f
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-gradient-to-r from-green-100 to-pink-100 py-4">
+    <footer className="w-auto h-auto bg-gradient-to-r from-green-100 to-pink-100 py-16 sm:px-8 md:px-10 lg:px-16 ">
+      <div className="flex align items-center justify-center flex-col">  
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* OnlineSchool Section */}
         <div className="flex flex-col items-center sm:items-start px-2">
           <div className="flex items-center mb-2">
-            <div><img src="/footericon.png" alt="OnlineSchool Logo" className="w-6 h-6 sm:w-8 sm:h-8" /></div>
+            <div><img src="/footer.png" alt="OnlineSchool Logo" className="w-6 h-6 sm:w-8 sm:h-8" /></div>
             <h3 className="text-sm sm:text-base lg:text-lg font-semibold ml-2">OnlineSchool</h3>
           </div>
           <p className="text-xs sm:text-sm mb-2 text-center sm:text-left max-w-[90%] sm:max-w-xs">
@@ -66,6 +67,7 @@ const Footer = () => {
       </div>
       <div className="text-center text-xs mt-4 sm:mt-6">
         <p>2025 © Fuchsius. All rights reserved.</p>
+      </div>
       </div>
     </footer>
   );
