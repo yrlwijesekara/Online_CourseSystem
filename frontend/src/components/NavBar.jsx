@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 
-const Navbar = () => {
+const Navbar = ({ navigateTo, currentPage = "home" }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -17,8 +17,18 @@ const Navbar = () => {
 
         {/* Desktop Nav Links */}
         <ul className="hidden md:flex space-x-8 text-sm font-medium">
-          <li className="font-bold text-black cursor-pointer">Home</li>
-          <li className="hover:text-black/70 cursor-pointer">Courses</li>
+          <li 
+            className={`cursor-pointer ${currentPage === 'home' ? 'font-bold text-black' : 'hover:text-black/70'}`} 
+            onClick={() => navigateTo && navigateTo('home')}
+          >
+            Home
+          </li>
+          <li 
+            className={`cursor-pointer ${currentPage === 'course' ? 'font-bold text-black' : 'hover:text-black/70'}`} 
+            onClick={() => navigateTo && navigateTo('course')}
+          >
+            Courses
+          </li>
           <li className="hover:text-black/70 cursor-pointer">About Us</li>
           <li className="hover:text-black/70 cursor-pointer">Contact</li>
           <li className="hover:text-black/70 cursor-pointer">Profile</li>
@@ -43,10 +53,26 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-gradient-to-r from-grad-start to-grad-end px-4 pt-2 pb-4">
+        <div className="md:hidden bg-gradient-to-r from-green-100 to-pink-100 px-4 pt-2 pb-4">
           <ul className="flex flex-col space-y-3 text-sm font-medium">
-            <li className="font-bold text-black">Home</li>
-            <li className="hover:text-black/70 cursor-pointer">Courses</li>
+            <li 
+              className={`cursor-pointer ${currentPage === 'home' ? 'font-bold text-black' : ''}`}
+              onClick={() => {
+                navigateTo && navigateTo('home');
+                setIsOpen(false);
+              }}
+            >
+              Home
+            </li>
+            <li 
+              className={`cursor-pointer ${currentPage === 'course' ? 'font-bold text-black' : 'hover:text-black/70'}`}
+              onClick={() => {
+                navigateTo && navigateTo('course');
+                setIsOpen(false);
+              }}
+            >
+              Courses
+            </li>
             <li className="hover:text-black/70 cursor-pointer">About Us</li>
             <li className="hover:text-black/70 cursor-pointer">Contact</li>
             <li className="hover:text-black/70 cursor-pointer">Profile</li>
