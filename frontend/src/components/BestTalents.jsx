@@ -57,17 +57,17 @@ const BestTalents = () => {
             <div key={talent.id} className="flex justify-center">
               <div 
                 style={{ backgroundColor: talent.backgroundColor }}
-                className="rounded-full pt-4 w-96 h-96 max-w-xs"
+                className="rounded-full  w-auto h-auto max-w-xs overflow-hidden"
               >
-                <div className="text-center mb-10 mt-4 ">
+                <div className="text-center mb-10 mt-4 pt-4">
                   <h3 className="text-xl font-medium text-[#011813]">{talent.name}</h3>
                   <p className="text-[#4E5255]">{talent.role}</p>
                 </div>
-                <div className="h-60 overflow-hidden ">
+                <div className="h-auto overflow-hidden ">
                   <img 
                     src={talent.image} 
                     alt={talent.name}
-                    className="w-full h-full object-cover pt-4"
+                    className="object-cover"
                     onError={(e) => {
                       console.error(`Failed to load image: ${talent.image}`);
                       e.target.src = 'https://via.placeholder.com/150?text=Image+Not+Found';
