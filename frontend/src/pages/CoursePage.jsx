@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from '../components/NavBar';
+import PopularCourses from '../components/PopularCourses';
 import { ArrowUpRight } from 'lucide-react';
 
 const CoursePage = () => {
@@ -26,7 +27,7 @@ const CoursePage = () => {
           
           {/* Section Title */}
           <div className="mt-8">
-            <h1 className="text-[32px] sm:text-[42px] md:text-[56px] lg:text-[72px] font-semibold leading-[1.2] sm:leading-[1.2] md:leading-[1.2] lg:leading-[86px] text-[#011813] max-w-[830px]">
+            <h1 className="text-2xl md:text-4xl font-semibold leading-[1.2] sm:leading-[1.2] md:leading-[1.2] lg:leading-[86px] text-[#011813] max-w-[830px]">
               We Offer an Outstanding Learning Experience
             </h1>
             
@@ -43,11 +44,11 @@ const CoursePage = () => {
             {/* Left side - Course image */}
             <div className="w-full md:w-1/2 md:pr-6 relative mb-6 md:mb-0">
               <div className="relative h-64 md:h-full rounded-[16px] overflow-hidden">
-                <div className="absolute inset-0 bg-black/10"></div>
+                <div className="absolute inset-0 bg-black/10 "></div>
                 <img 
                   src="/course/html.png" 
                   alt="HTML CSS JS Course" 
-                  className="w-full h-full object-cover"
+                  className="w-auto h-auto object-cover"
                 />
               </div>
             </div>
@@ -101,17 +102,17 @@ const CoursePage = () => {
               </div>
               
               {/* Divider */}
-              <div className="h-[1px] bg-[#E7E7E8] my-4 md:my-8"></div>
+              <div className="h-[1px] bg-black my-4 md:my-8"></div>
               
               {/* Price and action button */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
-                <div className="text-[24px] md:text-[32px] font-semibold text-[#009D77]">$190.00</div>
+                <div className="text-[24px] md:text-[32px] font-semibold text-green-600 md:text-[#011813]">$190.00</div>
                 
                 <div className="relative w-full sm:w-auto">
-                  <button className="group w-full sm:w-auto flex items-center justify-center sm:justify-start border border-[#011813] rounded-full pl-5 pr-12 py-2 md:py-3 relative hover:bg-[#011813] hover:text-white transition-all duration-300">
-                    <span className="text-[#011813] font-medium group-hover:text-white">View Details</span>
+                  <button className="group w-full sm:w-auto flex items-center justify-center sm:justify-start border border-black rounded-full pl-5 pr-12 py-2 md:py-3 relative hover:bg-[#011813] hover:text-white transition-all duration-300">
+                    <span className="text-[#011813] font-medium group-hover:text-green-600">View Details</span>
                     <div className="absolute right-0 top-0 bottom-0 bg-[#011813] rounded-full w-10 h-10 flex items-center justify-center">
-                      <ArrowUpRight size={16} color="white" className="transform transition-transform group-hover:translate-x-0.5" />
+                      <ArrowUpRight size={16} color="black" className="transform transition-transform group-hover:translate-x-0.5 " />
                     </div>
                   </button>
                 </div>
@@ -122,6 +123,7 @@ const CoursePage = () => {
       </div>
     </div>
   );
+  <PopularCourses />
 };
 
 export default CoursePage;
