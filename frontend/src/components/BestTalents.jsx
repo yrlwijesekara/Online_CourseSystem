@@ -41,7 +41,7 @@ const BestTalents = () => {
             Learn from the Best Talent<br />in the Industry
           </h2>
             <div className='flex justify-center md:justify-start'>
-          <button className="bg-white rounded-full py-3 px-6 text-[#011813] font-medium inline-flex items-center">
+          <button className="bg-white rounded-full py-3 px-6 text-[#011813] font-medium inline-flex items-center hover:text-green-500 transition">
             <span>View All Mentors</span>
            <div className="w-8 h-8 bg-[#011813] rounded-full ml-2 flex items-center justify-center">
               <img src="/bestTalent/arrowicon.png" alt="Arrow Right" className="w-8 h-8" />

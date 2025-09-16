@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '../components/NavBar';
 import PopularCourses from '../components/PopularCourses';
 import BestTalents from '../components/BestTalents';
 import { ArrowUpRight } from 'lucide-react';
 
 const CoursePage = () => {
+  // State to track the active filter category
+  const [activeFilter, setActiveFilter] = useState('All Categories');
   
+  // List of all categories for the filter
+  const categories = [
+    { name: 'All Categories', icon: '🏷️' },
+    { name: 'Development', icon: '💻' },
+    { name: 'UI/UX Design', icon: '🎨' },
+    { name: 'Project Management', icon: '📊' },
+    { name: 'Accounting', icon: '💰' },
+    { name: 'Marketing', icon: '📈' }
+  ];
+
+  // Function to handle filter changes
+  const handleFilterChange = (category) => {
+    setActiveFilter(category);
+  };
 
   // Additional 6 courses for the All Courses section
   const allCourses = [
@@ -221,80 +237,90 @@ const CoursePage = () => {
 
                   {/* Category Filters */}
                   <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-12">
-                      <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-green-500 text-white shadow-lg">
-                          <span className="mr-2">🏷️</span>All Categories
-                      </button>
-                      <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-white text-gray-600 border border-gray-200 hover:border-teal-300 hover:text-teal-600">
-                          <span className="mr-2">💻</span>Development
-                      </button>
-                      <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-white text-gray-600 border border-gray-200 hover:border-teal-300 hover:text-teal-600">
-                          <span className="mr-2">🎨</span>UI/UX Design
-                      </button>
-                      <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-white text-gray-600 border border-gray-200 hover:border-teal-300 hover:text-teal-600">
-                          <span className="mr-2">📊</span>Project Management
-                      </button>
-                      <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-white text-gray-600 border border-gray-200 hover:border-teal-300 hover:text-teal-600">
-                          <span className="mr-2">💰</span>Accounting
-                      </button>
-                      <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-white text-gray-600 border border-gray-200 hover:border-teal-300 hover:text-teal-600">
-                          <span className="mr-2">📈</span>Marketing
-                      </button>
+                      {categories.map((category) => (
+                          <button
+                              key={category.name}
+                              onClick={() => handleFilterChange(category.name)}
+                              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                  activeFilter === category.name
+                                  ? 'bg-green-500 text-white shadow-lg'
+                                  : 'bg-white text-gray-600 border border-gray-200 hover:border-teal-300 hover:text-teal-600'
+                              }`}
+                          >
+                              <span className="mr-2">{category.icon}</span>
+                              {category.name}
+                          </button>
+                      ))}
                   </div>
 
-                  {/* Course Grid - Showing 6 courses */}
+                  {/* Course Grid - Showing filtered courses */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                      {allCourses.map((course) => (
-                          <div key={course.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
-                              {/* Course Image */}
-                              <div className="h-48 w-full relative flex items-center justify-center overflow-hidden">
-                                  <img src={course.image} alt={course.title} className="object-cover w-full h-full" />
-                              </div>
+                      {(() => {
+                          const filteredCourses = allCourses.filter(
+                              course => activeFilter === 'All Categories' || course.category === activeFilter
+                          );
+                          
+                          if (filteredCourses.length === 0) {
+                              return (
+                                  <div className="col-span-full text-center py-12">
+                                      <p className="text-gray-600 text-lg">No courses found for this category. Try another filter.</p>
+                                  </div>
+                              );
+                          }
+                          
+                          return filteredCourses.map((course) => (
+                              <div key={course.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+                                  {/* Course Image */}
+                                  <div className="h-48 w-full relative flex items-center justify-center overflow-hidden">
+                                      <img src={course.image} alt={course.title} className="object-cover w-full h-full" />
+                                  </div>
 
-                              {/* Course Details */}
-                              <div className="p-6">
-                                  <div className="flex items-center mb-2">
-                                      <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
-                                          {course.category}
-                                      </span>
-                                  </div>
-                                  
-                                  <h4 className="font-bold text-gray-900 text-lg mb-4 leading-tight">
-                                      {course.title}
-                                  </h4>
+                                  {/* Course Details */}
+                                  <div className="p-6">
+                                      <div className="flex items-center mb-2">
+                                          <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
+                                              {course.category}
+                                          </span>
+                                      </div>
+                                      
+                                      <h4 className="font-bold text-gray-900 text-lg mb-4 leading-tight">
+                                          {course.title}
+                                      </h4>
 
-                                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                                      <div className="flex items-center">
-                                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
-                                              <path d="M10 5V10L12.5 12.5" stroke="#4E5255" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                              <path d="M2.5 10C2.5 14.1421 5.85786 17.5 10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85786 14.1421 2.5 10 2.5C5.85786 2.5 2.5 5.85786 2.5 10Z" stroke="#4E5255" strokeWidth="1.5"/>
-                                          </svg>
-                                          <span>{course.duration}</span>
+                                      <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                                          <div className="flex items-center">
+                                              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
+                                                  <path d="M10 5V10L12.5 12.5" stroke="#4E5255" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                  <path d="M2.5 10C2.5 14.1421 5.85786 17.5 10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85786 14.1421 2.5 10 2.5C5.85786 2.5 2.5 5.85786 2.5 10Z" stroke="#4E5255" strokeWidth="1.5"/>
+                                              </svg>
+                                              <span>{course.duration}</span>
+                                          </div>
+                                          <div className="flex items-center">
+                                              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
+                                                  <rect x="2.5" y="2.5" width="15" height="15" rx="2" stroke="#4E5255" strokeWidth="1.5"/>
+                                              </svg>
+                                              <span>{course.lectures} lectures</span>
+                                          </div>
                                       </div>
-                                      <div className="flex items-center">
-                                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
-                                              <rect x="2.5" y="2.5" width="15" height="15" rx="2" stroke="#4E5255" strokeWidth="1.5"/>
-                                          </svg>
-                                          <span>{course.lectures} lectures</span>
+                                      
+                                      <div className="flex justify-between items-center border-t border-gray-100 pt-4">
+                                          <div className="text-2xl font-bold text-green-500">
+                                              ${course.price.toFixed(2)}
+                                          </div>
+                                          <button className="text-sm font-medium text-gray-700 hover:text-green-500">View Details</button>
                                       </div>
-                                  </div>
-                                  
-                                  <div className="flex justify-between items-center border-t border-gray-100 pt-4">
-                                      <div className="text-2xl font-bold text-green-500">
-                                          ${course.price.toFixed(2)}
-                                      </div>
-                                      <button className="text-sm font-medium text-gray-700 hover:text-green-500">View Details</button>
                                   </div>
                               </div>
-                          </div>
-                      ))}
+                          ));
+                      })()}
                   </div>
 
                   {/* Explore All Courses Button */}
                   <div className="text-center">
                       <button className="bg-white text-gray-900 border border-black px-8 py-4 rounded-full font-medium hover:bg-[#011813] hover:text-white transition-colors duration-200 inline-flex items-center group">
-                          <span className="group-hover:text-white">View More Courses</span>
+                          <span className="group-hover:text-green-500">View More Courses</span>
                           <span className="ml-2 bg-[#011813] text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
-                              <ArrowUpRight size={16} color="white" className="transform transition-transform group-hover:translate-x-0.5" />
+                              <ArrowUpRight size={16} color="black" className="transform transition-transform group-hover:translate-x-0.5" />
                           </span>
                       </button>
                   </div>
