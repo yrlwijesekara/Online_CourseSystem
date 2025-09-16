@@ -329,6 +329,7 @@ const CoursePage = () => {
       </div>
 
       <BestTalents />
+      <ReviewStudents />
       <Footer />
     </>
   );
