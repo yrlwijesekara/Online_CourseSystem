@@ -7,33 +7,33 @@ const BestTalents = () => {
       name: "Matthew Ryan",
       role: "Product Designer",
       image: "/bestTalent/Mathew.png",
-      backgroundColor: "bg-[#FFD3E1]",
+      backgroundColor: "#FFD3E1",
     },
     {
       id: 2,
       name: "Daniel Joseph",
       role: "Software Engineer",
       image: "/bestTalent/Daniel.png",
-      backgroundColor: "bg-[#FFD3E1]",
+      backgroundColor: "#FFD3E1",
     },
     {
       id: 3,
       name: "Adam Bennett",
       role: "Digital Marketer",
       image: "/bestTalent/Adam.png",
-      backgroundColor: "bg-[#FBECC0]",
+      backgroundColor: "#FBECC0",
     },
     {
       id: 4,
       name: "James Michael",
       role: "Digital Marketer",
       image: "/bestTalent/James.png",
-      backgroundColor: "bg-[#FCEEDF]",
+      backgroundColor: "#FCEEDF",
     }
   ];
 
   return (
-    <section className="bg-black py-16">
+    <section style={{ backgroundColor: "#011813" }} className="py-16">
       <div className="container mx-auto px-4">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center m-10">
@@ -55,7 +55,10 @@ const BestTalents = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {talents.map((talent) => (
             <div key={talent.id} className="flex justify-center">
-              <div className={`${talent.backgroundColor} rounded-3xl p-6 w-full max-w-xs`}>
+              <div 
+                style={{ backgroundColor: talent.backgroundColor }}
+                className="rounded-3xl p-6 w-full max-w-xs"
+              >
                 <div className="text-center mb-4">
                   <h3 className="text-xl font-medium text-[#011813]">{talent.name}</h3>
                   <p className="text-[#4E5255]">{talent.role}</p>
