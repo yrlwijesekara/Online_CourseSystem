@@ -121,9 +121,11 @@ const CoursePage = () => {
           </div>
         </div>
       </div>
+      
+      {/* Popular Courses Section */}
+      <PopularCourses />
     </div>
   );
-  <PopularCourses />
 };
 
 export default CoursePage;
