@@ -4,7 +4,7 @@ import PopularCourses from './components/PopularCourses'
 import BestTalents from './components/BestTalents';
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage';
-import CoursePage from './pages/CoursepAGE.JSX';
+import CoursePage from './pages/CoursePage';
 
 
 function App() {
