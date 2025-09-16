@@ -52,22 +52,22 @@ const BestTalents = () => {
         </div>
 
         {/* Simple Talents Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {talents.map((talent) => (
             <div key={talent.id} className="flex justify-center">
               <div 
                 style={{ backgroundColor: talent.backgroundColor }}
-                className="rounded-3xl p-6 w-full max-w-xs"
+                className="rounded-full pt-4 w-96 h-96 max-w-xs"
               >
-                <div className="text-center mb-4">
+                <div className="text-center mb-10 mt-4 ">
                   <h3 className="text-xl font-medium text-[#011813]">{talent.name}</h3>
                   <p className="text-[#4E5255]">{talent.role}</p>
                 </div>
-                <div className="h-48 overflow-hidden">
+                <div className="h-60 overflow-hidden ">
                   <img 
                     src={talent.image} 
                     alt={talent.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover pt-4"
                     onError={(e) => {
                       console.error(`Failed to load image: ${talent.image}`);
                       e.target.src = 'https://via.placeholder.com/150?text=Image+Not+Found';
