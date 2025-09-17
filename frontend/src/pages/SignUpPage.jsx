@@ -36,8 +36,8 @@ const SignUpPage = ({ navigateTo }) => {
     navigateTo('home');
   };
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="flex min-h-screen items-center justify-center p-10">
+      <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden p-10 md:p-10">
         {/* Left Side - Form */}
         <div className="w-full md:w-1/2 p-10">
           <h1 className="text-3xl font-bold mb-2">Sign Up</h1>

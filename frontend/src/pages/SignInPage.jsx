@@ -30,8 +30,8 @@ const SignInPage = ({ navigateTo }) => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center "> {/*bg-gradient-to-r from-blue-50 to-pink-50*/}
-      <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="flex min-h-screen items-center justify-center p-10 "> {/*bg-gradient-to-r from-blue-50 to-pink-50*/}
+      <div className="flex w-full h-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden p-0 md:p-10">
         {/* Left Side - Form */}
         <div className="w-full md:w-1/2 p-10">
           <h1 className="text-3xl font-bold mb-2">Sign in</h1>
