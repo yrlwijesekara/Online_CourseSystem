@@ -1,9 +1,43 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-const SignUpPage = () => {
+const SignUpPage = ({ navigateTo }) => {
+  // State for form inputs
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Simple validation
+    if (!firstName || !lastName || !email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
+    // In a real app, you would register with a server here
+    console.log('Registering with:', { firstName, lastName, email, password, rememberMe });
+    
+    // Navigate to home page after successful registration
+    navigateTo('home');
+  };
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="flex min-h-screen items-center justify-center p-10">
+      <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden p-10 md:p-10">
         {/* Left Side - Form */}
         <div className="w-full md:w-1/2 p-10">
           <h1 className="text-3xl font-bold mb-2">Sign Up</h1>
@@ -11,13 +45,22 @@ const SignUpPage = () => {
             Please register to continue to your account.
           </p>
 
-          <form className="space-y-5">
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label className="block mb-1 text-gray-700">First name</label>
               <input
                 type="text"
                 placeholder="Didul"
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
               />
             </div>
             <div>
@@ -26,6 +69,9 @@ const SignUpPage = () => {
                 type="text"
                 placeholder="Adeesha"
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
               />
             </div>
             <div>
@@ -34,6 +80,9 @@ const SignUpPage = () => {
                 type="email"
                 placeholder="adeeshadidul@gmail.com"
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
             <div>
@@ -42,11 +91,19 @@ const SignUpPage = () => {
                 type="password"
                 placeholder="Password"
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
 
             <div className="flex items-center">
-              <input type="checkbox" className="mr-2" />
+              <input 
+                type="checkbox" 
+                className="mr-2" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
               <span className="text-gray-600">Keep me logged in</span>
             </div>
 
@@ -77,7 +134,10 @@ const SignUpPage = () => {
           </form>
 
           <p className="text-sm text-gray-600 mt-5">
-            Have an account? <a href="#" className="text-blue-500">Log In</a>
+            Have an account? <a href="#" className="text-blue-500 hover:underline" onClick={(e) => {
+              e.preventDefault();
+              navigateTo('signin');
+            }}>Log In</a>
           </p>
         </div>
 
