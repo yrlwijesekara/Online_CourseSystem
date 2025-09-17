@@ -1,6 +1,34 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-const SignInPage = () => {
+const SignInPage = ({ navigateTo }) => {
+  // State for form inputs
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Simple validation
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+    
+    // For demonstration purposes, accept any valid-looking email and password
+    if (email.includes('@') && password.length >= 6) {
+      // In a real app, you would authenticate with a server here
+      console.log('Logging in with:', { email, password, rememberMe });
+      
+      // Navigate to home page after successful login
+      navigateTo('home');
+    } else {
+      setError('Invalid email or password. Password must be at least 6 characters.');
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center "> {/*bg-gradient-to-r from-blue-50 to-pink-50*/}
       <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -11,13 +39,22 @@ const SignInPage = () => {
             Please login to continue to your account.
           </p>
 
-          <form className="space-y-5">
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label className="block mb-1 text-gray-700">Email</label>
               <input
                 type="email"
                 placeholder="adeeshadidul@gmail.com"
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
             <div>
@@ -26,11 +63,19 @@ const SignInPage = () => {
                 type="password"
                 placeholder="Password"
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
 
             <div className="flex items-center">
-              <input type="checkbox" className="mr-2" />
+              <input 
+                type="checkbox" 
+                className="mr-2" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
               <span className="text-gray-600">Keep me logged in</span>
             </div>
 
@@ -61,7 +106,10 @@ const SignInPage = () => {
           </form>
 
           <p className="text-sm text-gray-600 mt-5">
-            Need an account? <a href="#" className="text-blue-500">Create one</a>
+            Need an account? <a href="#" className="text-blue-500 hover:underline" onClick={(e) => {
+              e.preventDefault();
+              navigateTo('signup');
+            }}>Create one</a>
           </p>
         </div>
 

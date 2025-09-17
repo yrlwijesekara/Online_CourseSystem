@@ -8,7 +8,7 @@ import CoursePage from './pages/CoursePage';
 
 function App() {
   // Use state to manage which page is displayed
-  const [currentPage, setCurrentPage] = useState('home'); // Options: 'home', 'course', 'signin', 'signup'
+  const [currentPage, setCurrentPage] = useState('signin'); // Start with signin page
   
   // Function to navigate between pages
   const navigateTo = (page) => {
