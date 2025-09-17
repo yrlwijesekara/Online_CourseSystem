@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage';
 import CoursePage from './pages/CoursePage';
+import ContactUs from './pages/ContactUs';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
     {currentPage === 'signin' && <SignInPage navigateTo={navigateTo} />}
     {currentPage === 'signup' && <SignUpPage navigateTo={navigateTo} />}
     {currentPage === 'home' && <HomePage navigateTo={navigateTo} />}
+    {currentPage === 'contact' && <ContactUs navigateTo={navigateTo} />}
     </>
   )
 } 
