@@ -30,10 +30,10 @@ const SignInPage = ({ navigateTo }) => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-10 "> {/*bg-gradient-to-r from-blue-50 to-pink-50*/}
-      <div className="flex w-full h-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden p-0 md:p-10">
+    <div className="flex min-h-screen items-center justify-center p-4 sm:p-6 md:p-10 bg-gradient-to-r from-cyan-100 to-pink-100" style={{background: 'linear-gradient(to right, #d6f1f6, #f6d6f3)'}}>
+      <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Left Side - Form */}
-        <div className="w-full md:w-1/2 p-10">
+        <div className="w-full md:w-1/2 p-6 md:p-10">
           <h1 className="text-3xl font-bold mb-2">Sign in</h1>
           <p className="text-gray-600 mb-8">
             Please login to continue to your account.
