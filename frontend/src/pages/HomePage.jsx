@@ -5,6 +5,7 @@ import BestTalents from '../components/BestTalents';
 import ReviewStudents from '../components/ReviewStudents';
 import Footer from '../components/Footer';
 import { ArrowUpRight } from 'lucide-react';
+import ChosenCourses from '../components/ChosenCourses';
 
 const HomePage = ({ navigateTo }) => {
   return (
@@ -65,6 +66,8 @@ const HomePage = ({ navigateTo }) => {
           </div>
         </div>
       </section>
+
+      <ChosenCourses/>
 
       {/* Popular Courses Section */}
       <PopularCourses />
