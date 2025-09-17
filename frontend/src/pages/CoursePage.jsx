@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import Navbar from '../components/NavBar';
 import PopularCourses from '../components/PopularCourses';
 import BestTalents from '../components/BestTalents';
+import ReviewStudents from '../components/ReviewStudents';
+import Footer from '../components/Footer';
 import { ArrowUpRight } from 'lucide-react';
 
-const CoursePage = () => {
+const CoursePage = ({ navigateTo }) => {
   // State to track the active filter category
   const [activeFilter, setActiveFilter] = useState('All Categories');
   
@@ -108,8 +110,9 @@ const CoursePage = () => {
     },
   ];
   return (
-    <><div className="course-page">
-          <Navbar />
+    <>
+      <div className="course-page">
+          <Navbar navigateTo={navigateTo} currentPage="course" />
 
           {/* Background with gradient effect */}
           <div className="relative w-full min-h-screen md:h-[848px] overflow-hidden bg-gradient-to-r from-green-100 to-pink-100 pb-10 md:pb-0">
@@ -224,7 +227,7 @@ const CoursePage = () => {
               </div>
           </div>
 
-         
+
           {/* All Courses Section */}
           <div className="min-h-screen py-12 px-4" style={{ backgroundColor: '#FFFFFF' }}>
               <div className="max-w-7xl mx-auto">
@@ -241,11 +244,9 @@ const CoursePage = () => {
                           <button
                               key={category.name}
                               onClick={() => handleFilterChange(category.name)}
-                              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                                  activeFilter === category.name
-                                  ? 'bg-green-500 text-white shadow-lg'
-                                  : 'bg-white text-gray-600 border border-gray-200 hover:border-teal-300 hover:text-teal-600'
-                              }`}
+                              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeFilter === category.name
+                                      ? 'bg-green-500 text-white shadow-lg'
+                                      : 'bg-white text-gray-600 border border-gray-200 hover:border-teal-300 hover:text-teal-600'}`}
                           >
                               <span className="mr-2">{category.icon}</span>
                               {category.name}
@@ -259,7 +260,7 @@ const CoursePage = () => {
                           const filteredCourses = allCourses.filter(
                               course => activeFilter === 'All Categories' || course.category === activeFilter
                           );
-                          
+
                           if (filteredCourses.length === 0) {
                               return (
                                   <div className="col-span-full text-center py-12">
@@ -267,7 +268,7 @@ const CoursePage = () => {
                                   </div>
                               );
                           }
-                          
+
                           return filteredCourses.map((course) => (
                               <div key={course.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
                                   {/* Course Image */}
@@ -282,7 +283,7 @@ const CoursePage = () => {
                                               {course.category}
                                           </span>
                                       </div>
-                                      
+
                                       <h4 className="font-bold text-gray-900 text-lg mb-4 leading-tight">
                                           {course.title}
                                       </h4>
@@ -290,19 +291,19 @@ const CoursePage = () => {
                                       <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                                           <div className="flex items-center">
                                               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
-                                                  <path d="M10 5V10L12.5 12.5" stroke="#4E5255" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                  <path d="M2.5 10C2.5 14.1421 5.85786 17.5 10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85786 14.1421 2.5 10 2.5C5.85786 2.5 2.5 5.85786 2.5 10Z" stroke="#4E5255" strokeWidth="1.5"/>
+                                                  <path d="M10 5V10L12.5 12.5" stroke="#4E5255" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                  <path d="M2.5 10C2.5 14.1421 5.85786 17.5 10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85786 14.1421 2.5 10 2.5C5.85786 2.5 2.5 5.85786 2.5 10Z" stroke="#4E5255" strokeWidth="1.5" />
                                               </svg>
                                               <span>{course.duration}</span>
                                           </div>
                                           <div className="flex items-center">
                                               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
-                                                  <rect x="2.5" y="2.5" width="15" height="15" rx="2" stroke="#4E5255" strokeWidth="1.5"/>
+                                                  <rect x="2.5" y="2.5" width="15" height="15" rx="2" stroke="#4E5255" strokeWidth="1.5" />
                                               </svg>
                                               <span>{course.lectures} lectures</span>
                                           </div>
                                       </div>
-                                      
+
                                       <div className="flex justify-between items-center border-t border-gray-100 pt-4">
                                           <div className="text-2xl font-bold text-green-500">
                                               ${course.price.toFixed(2)}
@@ -327,9 +328,11 @@ const CoursePage = () => {
               </div>
           </div>
       </div>
-      
+
       <BestTalents />
-      </>
+      <ReviewStudents />
+      <Footer />
+    </>
   );
 };
 
