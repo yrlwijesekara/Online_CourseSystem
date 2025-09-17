@@ -5,6 +5,7 @@ import BestTalents from '../components/BestTalents';
 import ReviewStudents from '../components/ReviewStudents';
 import Footer from '../components/Footer';
 import { ArrowUpRight } from 'lucide-react';
+import ChosenCourses from '../components/ChosenCourses';
 
 const HomePage = ({ navigateTo }) => {
   return (
@@ -19,27 +20,26 @@ const HomePage = ({ navigateTo }) => {
             {/* Left Content */}
             <div className="w-full lg:w-1/2 mt-10 lg:mt-0 text-center lg:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Elevate Your Skills with Online Learning
+                Best Courses to Expand Your Digital Abilities
               </h1>
               <p className="mt-6 text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
-                Access world-class courses taught by industry experts. Learn at your own pace and 
-                advance your career from anywhere in the world.
+                Explore courses that expand your digital abilities, covering key areas like data analytics, design, and marketing for career growth and innovation.
               </p>
               <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-4">
-                <button className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 transition-all">
+                {/* <button className="flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 transition-all">
                   <span>Get Started</span>
                   <ArrowUpRight size={18} />
-                </button>
+                </button> */}
                 <button 
-                  className="flex items-center space-x-2 border border-black px-6 py-3 rounded-full hover:bg-black hover:text-white transition-all"
+                  className="flex items-center space-x-2 bg-green-500 text-white px-6 py-3 rounded-full hover:bg-black hover:text-white transition-all"
                   onClick={() => navigateTo && navigateTo('course')}
                 >
-                  <span>Browse Courses</span>
+                  <span>Explore Courses</span>
                 </button>
               </div>
               
               {/* Stats */}
-              <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-8">
+              {/* <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-8">
                 <div className="text-center lg:text-left">
                   <p className="text-3xl md:text-4xl font-bold text-gray-900">100+</p>
                   <p className="text-gray-600">Online Courses</p>
@@ -52,13 +52,13 @@ const HomePage = ({ navigateTo }) => {
                   <p className="text-3xl md:text-4xl font-bold text-gray-900">25k+</p>
                   <p className="text-gray-600">Active Students</p>
                 </div>
-              </div>
+              </div> */}
             </div>
             
             {/* Right Content - Image */}
             <div className="w-full lg:w-1/2 lg:pl-8">
               <img 
-                src="/course/html.png" 
+                src="/homeImage/home1.png" 
                 alt="Online Learning" 
                 className="rounded-lg shadow-xl max-w-full h-auto"
               />
@@ -66,6 +66,8 @@ const HomePage = ({ navigateTo }) => {
           </div>
         </div>
       </section>
+
+      <ChosenCourses/>
 
       {/* Popular Courses Section */}
       <PopularCourses />
