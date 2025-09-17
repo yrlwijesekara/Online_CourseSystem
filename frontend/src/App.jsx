@@ -4,11 +4,12 @@ import HomePage from './pages/HomePage';
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage';
 import CoursePage from './pages/CoursePage';
+import ContactUs from './pages/ContactUs';
 
 
 function App() {
   // Use state to manage which page is displayed
-  const [currentPage, setCurrentPage] = useState('home'); // Options: 'home', 'course', 'signin', 'signup'
+  const [currentPage, setCurrentPage] = useState('signin'); // Start with signin page
   
   // Function to navigate between pages
   const navigateTo = (page) => {
@@ -21,6 +22,7 @@ function App() {
     {currentPage === 'signin' && <SignInPage navigateTo={navigateTo} />}
     {currentPage === 'signup' && <SignUpPage navigateTo={navigateTo} />}
     {currentPage === 'home' && <HomePage navigateTo={navigateTo} />}
+    {currentPage === 'contact' && <ContactUs navigateTo={navigateTo} />}
     </>
   )
 } 

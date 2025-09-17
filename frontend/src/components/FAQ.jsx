@@ -30,7 +30,7 @@ const FaqComponent = () => {
     <div className="container mx-auto px-4 py-8">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">Frequently Asked Questions</h2>
       <p className="text-center text-gray-600 mb-8">Frequently Asked Questions offers quick answers to common queries, guiding users through features and functionalities effortlessly.</p>
-      <div className="space-y-4">
+      <div className="space-y-4 p-4 sm:p-6 md:p-10">
         {faqs.map((faq, index) => (
           <div key={index} className="border rounded-lg p-4 bg-white shadow-sm">
            <button
