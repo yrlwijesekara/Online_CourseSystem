@@ -30,7 +30,12 @@ const Navbar = ({ navigateTo, currentPage = "home" }) => {
             Courses
           </li>
           <li className="hover:text-black/70 cursor-pointer">About Us</li>
-          <li className="hover:text-black/70 cursor-pointer">Contact</li>
+          <li 
+            className={`cursor-pointer ${currentPage === 'contact' ? 'font-bold text-black' : 'hover:text-black/70'}`}
+            onClick={() => navigateTo && navigateTo('contact')}
+          >
+            Contact
+          </li>
           <li className="hover:text-black/70 cursor-pointer">Profile</li>
         </ul>
 
@@ -74,7 +79,15 @@ const Navbar = ({ navigateTo, currentPage = "home" }) => {
               Courses
             </li>
             <li className="hover:text-black/70 cursor-pointer">About Us</li>
-            <li className="hover:text-black/70 cursor-pointer">Contact</li>
+            <li 
+              className={`cursor-pointer ${currentPage === 'contact' ? 'font-bold text-black' : 'hover:text-black/70'}`}
+              onClick={() => {
+                navigateTo && navigateTo('contact');
+                setIsOpen(false);
+              }}
+            >
+              Contact
+            </li>
             <li className="hover:text-black/70 cursor-pointer">Profile</li>
           </ul>
           <button className="mt-4 flex items-center justify-center space-x-3 border border-black px-4 py-2 rounded-full w-full hover:bg-black hover:text-white transition">
