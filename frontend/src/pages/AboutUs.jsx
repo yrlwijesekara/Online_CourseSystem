@@ -7,7 +7,10 @@ import videoThumb from "../assets/aboutUs/Video Section.png";
 import instructorImg from "../assets/aboutUs/instructorImg.png";
 import studentImg from "../assets/aboutUs/studentImg.png";
 import Navbar from "../components/NavBar";
+import FAQ from "../components/FAQ";
 import Footer from "../components/Footer";
+import BestTalents from "../components/BestTalents";
+import TeamLearning from "../components/TeamLearning";
 
 export default function AboutUs({ navigateTo }) {
     return (
@@ -238,6 +241,11 @@ export default function AboutUs({ navigateTo }) {
 
                 </div>
             </section>
+            <TeamLearning />
+            <BestTalents />
+            {/* FAQ Section */}
+            <FAQ />
+            {/* Footer */}
             <Footer />
         </div>
 

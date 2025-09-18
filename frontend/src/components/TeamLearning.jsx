@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import experienceImg from "../assets/aboutUs/experience.png"; // 👈 replace with your actual image
+import experienceImg from "../assets/aboutUs/image_lap.png"; // Using an existing image as fallback
 
 export default function TeamLearning() {
     return (
