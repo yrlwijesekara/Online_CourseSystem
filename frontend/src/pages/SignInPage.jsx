@@ -7,6 +7,10 @@ const SignInPage = ({ navigateTo }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
 
+  // Admin credentials
+  const adminEmail = 'admin@example.com';
+  const adminPassword = 'admin123';
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -17,7 +21,14 @@ const SignInPage = ({ navigateTo }) => {
       return;
     }
     
-    // For demonstration purposes, accept any valid-looking email and password
+    // Check if admin credentials
+    if (email === adminEmail && password === adminPassword) {
+      console.log('Admin login successful');
+      navigateTo('admin');
+      return;
+    }
+    
+    // For regular users
     if (email.includes('@') && password.length >= 6) {
       // In a real app, you would authenticate with a server here
       console.log('Logging in with:', { email, password, rememberMe });
