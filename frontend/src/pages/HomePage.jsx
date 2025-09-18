@@ -61,7 +61,7 @@ const HomePage = ({ navigateTo }) => {
               <img 
                 src="/homeImage/home1.png" 
                 alt="Online Learning" 
-                className="rounded-xl shadow-xl max-w-full h-auto"
+                className="rounded-xl  max-w-full h-auto"
               />
             </div>
           </div>
