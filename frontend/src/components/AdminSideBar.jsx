@@ -6,39 +6,52 @@ import {
   BookOpen, 
   DollarSign,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 
-const AdminSideBar = () => {
+const AdminSideBar = ({ navigateTo }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
     {
       icon: LayoutDashboard,
       label: 'Dashboard',
-      active: true
+      active: true,
+      page: 'admin'
     },
     {
       icon: Users,
       label: 'Students',
-      active: false
+      active: false,
+      page: 'admin-students'
     },
     {
       icon: UserCheck,
       label: 'Instructors',
-      active: false
+      active: false,
+      page: 'admin-instructors'
     },
     {
       icon: BookOpen,
       label: 'Courses',
-      active: false
+      active: false,
+      page: 'admin-courses'
     },
     {
       icon: DollarSign,
       label: 'Revenue',
-      active: false
+      active: false,
+      page: 'admin-revenue'
     }
   ];
+
+  const handleNavigation = (page) => {
+    if (navigateTo) {
+      navigateTo(page);
+    }
+    setIsMobileMenuOpen(false);
+  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -106,7 +119,7 @@ const AdminSideBar = () => {
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }
                       `}
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={() => handleNavigation(item.page)}
                     >
                       <Icon className={`
                         w-5 h-5 mr-3
@@ -118,6 +131,18 @@ const AdminSideBar = () => {
                 );
               })}
             </ul>
+            
+            {/* Logout Button */}
+            <div className="mt-8">
+              <a
+                href="#"
+                className="flex items-center px-4 py-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
+                onClick={() => handleNavigation('signin')}
+              >
+                <LogOut className="w-5 h-5 mr-3 text-gray-400" />
+                Logout
+              </a>
+            </div>
           </nav>
         </div>
       </aside>
