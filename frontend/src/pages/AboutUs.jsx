@@ -255,7 +255,7 @@ export default function AboutUs({ navigateTo }) {
 
                 </div>
             </section>
-            <TeamLearning />
+            <TeamLearning navigateTo={navigateTo} />
             <BestTalents />
             {/* FAQ Section */}
             <FAQ />
