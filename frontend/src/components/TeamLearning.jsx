@@ -1,9 +1,9 @@
 import { ArrowUpRight } from "lucide-react";
 
-import experienceImg from "../assets/aboutUs/image_lap.png"; // Using an existing image as fallback
+import experienceImg from "../assets/aboutUs/image_lap.png"; // Using an existing image as a fallback
 
 
-export default function TeamLearning() {
+export default function TeamLearning({navigateTo}) {
     return (
         <section className="w-full bg-white py-20">
             <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-12 items-center">
@@ -52,7 +52,15 @@ export default function TeamLearning() {
                     </div>
 
                     {/* CTA Button */}
-                    <button className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition">
+                    <button className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition"
+                            onClick={() => {
+                                navigateTo("course");
+                                //force scroll to top after navigation
+                                setTimeout(() => {
+                                    window.scrollTo({ top: 10, behavior: "smooth" });
+                                }, 0);
+                            }}
+                        >
                         Explore Courses
                         <span className="bg-white text-green-600 rounded-full p-1">
               <ArrowUpRight className="w-4 h-4" />
