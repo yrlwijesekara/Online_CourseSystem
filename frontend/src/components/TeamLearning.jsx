@@ -1,5 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
-import experienceImg from "../assets/aboutUs/experience.png"; // 👈 replace with your actual image
+
+import experienceImg from "../assets/aboutUs/image_lap.png"; // Using an existing image as fallback
+
 
 export default function TeamLearning() {
     return (
@@ -14,11 +16,12 @@ export default function TeamLearning() {
                         className="rounded-2xl shadow-lg w-full object-cover"
                     />
 
-                    {/* Floating Completion Card */}
-                    <div className="absolute bottom-6 left-6 bg-white shadow-xl rounded-xl px-6 py-4">
-                        <p className="text-sm text-gray-600">Average Class Completion Rate</p>
+
+                    <div className="absolute bottom-2 sm:bottom-4 md:bottom-6 left-2 sm:left-4 md:left-6 bg-white shadow-xl rounded-xl px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 scale-75 sm:scale-90 md:scale-100 transform origin-bottom-left">
+                        <p className="text-xs sm:text-sm text-gray-600">Average Class Completion Rate</p>
                         <p className="text-green-600 text-xs mt-1">↑ 65+</p>
-                        <h3 className="text-3xl font-bold text-gray-900">95%</h3>
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">95%</h3>
+
                     </div>
                 </div>
 
