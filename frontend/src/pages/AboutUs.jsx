@@ -44,6 +44,7 @@ export default function AboutUs({ navigateTo }) {
                                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">10+</h2>
                                 <p className="text-gray-600 font-medium text-sm sm:text-base">Years of Experience</p>
                                 <p className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-3">
+
                                     Leveraging 10+ years in the field, our online courses offer
                                     expertly developed content, designed to support learners with
                                     engaging and impactful education.
@@ -117,6 +118,7 @@ export default function AboutUs({ navigateTo }) {
                     </div>
 
                     {/* Right Image */}
+
                     <div className="relative lg:col-span-1 flex justify-center p-6">
                         <div className="w-full">
                         <img
@@ -133,12 +135,15 @@ export default function AboutUs({ navigateTo }) {
                             />
                         </div>
                         
+
                     </div>
                 </div>
             </section>
 
             {/* ========== Achievement Section ========== */}
+
             <section className="w-full bg-white p-10">
+
                 <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-12 items-center">
 
                     {/* Left: Video Thumbnail */}
@@ -157,9 +162,11 @@ export default function AboutUs({ navigateTo }) {
                         </button>
 
                         {/* Caption */}
+
                         <div className="absolute bottom-2 sm:bottom-3 md:bottom-4 left-2 sm:left-3 md:left-4 bg-white shadow-lg rounded-lg px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 scale-75 sm:scale-90 md:scale-100 transform origin-bottom-left">
                             <p className="font-semibold text-gray-900 text-sm sm:text-base">Making Career Impact Together</p>
                             <p className="text-xs sm:text-sm text-gray-600">Founder, MH Master Hub</p>
+
                         </div>
                     </div>
 
@@ -254,6 +261,7 @@ export default function AboutUs({ navigateTo }) {
             <FAQ />
             {/* Footer */}
             <Footer />
+
         </div>
 
     );
