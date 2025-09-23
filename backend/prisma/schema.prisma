@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // or "postgresql" later
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  bio       String?
+  avatarUrl String?
+  role      String   @default("STUDENT") // STUDENT, INSTRUCTOR, ADMIN
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courses        Course[]         @relation("InstructorCourses")
+  enrollments    Enrollment[]
+  submissions    Submission[]
+  payments       Payment[]
+  sentMessages   Message[]        @relation("SentMessages")
+  recvMessages   Message[]        @relation("RecvMessages")
+  certificates   Certificate[]
+  QuizSubmission QuizSubmission[]
+  Post           ForumPost[]
+
+  Quiz Quiz[]
+
+  ForumComment ForumComment[]
+}
+
+model Course {
+  id            Int      @id @default(autoincrement())
+  title         String
+  slug          String   @unique
+  description   String
+  coverImageUrl String?
+  priceCents    Int      @default(0)
+  isPublished   Boolean  @default(false)
+  difficulty    String   @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  instructorId Int
+  instructor   User          @relation("InstructorCourses", fields: [instructorId], references: [id])
+  modules      Module[]
+  enrollments  Enrollment[]
+  //categories   Category[]    @relation("CourseCategories", references: [id])
+  forums       ForumPost[]
+  certificates Certificate[]
+
+  Category Category[] @relation("CourseCategories")
+}
+
+model Category {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  slug    String   @unique
+  courses Course[] @relation("CourseCategories")
+}
+
+model Module {
+  id        Int      @id @default(autoincrement())
+  title     String
+  order     Int
+  courseId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course  Course   @relation(fields: [courseId], references: [id])
+  lessons Lesson[]
+}
+
+model Lesson {
+  id          Int      @id @default(autoincrement())
+  title       String
+  contentType String   @default("ARTICLE") // VIDEO, ARTICLE, PDF, OTHER
+  contentUrl  String?
+  contents    Json?
+  text        String?
+  durationSec Int?
+  order       Int
+  moduleId    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  module      Module       @relation(fields: [moduleId], references: [id])
+  quizzes     Quiz[]
+  assignments Assignment[]
+}
+
+model Enrollment {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  courseId    Int
+  enrolledAt  DateTime  @default(now())
+  progress    Float     @default(0)
+  isActive    Boolean   @default(true)
+  completedAt DateTime?
+
+  user     User      @relation(fields: [userId], references: [id])
+  course   Course    @relation(fields: [courseId], references: [id])
+  payments Payment[]
+}
+
+model Payment {
+  id           Int       @id @default(autoincrement())
+  enrollmentId Int?
+  userId       Int
+  courseId     Int?
+  amountCents  Int
+  currency     String    @default("USD")
+  provider     String
+  providerRef  String?
+  status       String    @default("PENDING") // PENDING, SUCCEEDED, FAILED, REFUNDED
+  paidAt       DateTime?
+
+  user       User        @relation(fields: [userId], references: [id])
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id])
+}
+
+model Quiz {
+  id         Int      @id @default(autoincrement())
+  title      String
+  lessonId   Int
+  totalMarks Int
+  createdAt  DateTime @default(now())
+
+  instructorId Int
+  instructor   User             @relation(fields: [instructorId], references: [id])
+  lesson       Lesson           @relation(fields: [lessonId], references: [id])
+  questions    Question[]
+  submissions  QuizSubmission[]
+}
+
+model Question {
+  id      Int     @id @default(autoincrement())
+  quizId  Int
+  text    String
+  type    String  @default("MCQ") // MCQ, MULTISELECT, TEXT, CODE
+  options String? // JSON string
+  correct String? // JSON/string
+  marks   Int
+
+  quiz Quiz @relation(fields: [quizId], references: [id])
+}
+
+model QuizSubmission {
+  id            Int      @id @default(autoincrement())
+  quizId        Int
+  userId        Int
+  answers       String // JSON
+  marksObtained Int
+  submittedAt   DateTime @default(now())
+
+  quiz Quiz @relation(fields: [quizId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Assignment {
+  id          Int       @id @default(autoincrement())
+  lessonId    Int
+  title       String
+  description String
+  contents    Json?
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+
+  lesson      Lesson       @relation(fields: [lessonId], references: [id])
+  submissions Submission[]
+}
+
+model Submission {
+  id           Int       @id @default(autoincrement())
+  assignmentId Int?
+  userId       Int
+  contentUrl   String?
+  text         String?
+  grade        Int?
+  feedback     String?
+  submittedAt  DateTime  @default(now())
+  gradedAt     DateTime?
+
+  assignment Assignment? @relation(fields: [assignmentId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+}
+
+model ForumPost {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  userId    Int
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+
+  user     User           @relation(fields: [userId], references: [id])
+  course   Course         @relation(fields: [courseId], references: [id])
+  comments ForumComment[]
+}
+
+model ForumComment {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  content   String
+  createdAt DateTime @default(now())
+
+  post ForumPost @relation(fields: [postId], references: [id])
+  user User      @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("RecvMessages", fields: [receiverId], references: [id])
+}
+
+model Certificate {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  courseId       Int
+  issuedAt       DateTime @default(now())
+  certificateUrl String?
+  isRevoked      Boolean  @default(false)
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorId   Int?
+  action    String
+  meta      String?
+  createdAt DateTime @default(now())
+}
