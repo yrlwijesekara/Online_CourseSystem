@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/NavBar';
 import PopularCourses from '../components/PopularCourses';
 import BestTalents from '../components/BestTalents';
@@ -9,6 +9,9 @@ import { ArrowUpRight } from 'lucide-react';
 const CoursePage = ({ navigateTo }) => {
   // State to track the active filter category
   const [activeFilter, setActiveFilter] = useState('All Categories');
+  const [allCourses, setAllCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   
   // List of all categories for the filter
   const categories = [
@@ -17,7 +20,13 @@ const CoursePage = ({ navigateTo }) => {
     { name: 'UI/UX Design', icon: '🎨' },
     { name: 'Project Management', icon: '📊' },
     { name: 'Accounting', icon: '💰' },
-    { name: 'Marketing', icon: '📈' }
+    { name: 'Marketing', icon: '📈' },
+    { name: 'Programming', icon: '⌨️' },
+    { name: 'Design', icon: '🎨' },
+    { name: 'Business', icon: '💼' },
+    { name: 'Photography', icon: '📸' },
+    { name: 'Music', icon: '🎵' },
+    { name: 'Health', icon: '🏥' }
   ];
 
   // Function to handle filter changes
@@ -25,12 +34,60 @@ const CoursePage = ({ navigateTo }) => {
     setActiveFilter(category);
   };
 
-  // Additional 6 courses for the All Courses section
-  const allCourses = [
+  // Fetch courses from API
+  const fetchCourses = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      // Add auth header if token exists (optional for public course viewing)
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('http://localhost:3001/api/courses', {
+        headers
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch courses');
+      }
+
+      const coursesData = await response.json();
+      
+      // Transform API data to match frontend format
+      const transformedCourses = coursesData.map(course => ({
+        id: course.id,
+        title: course.title,
+        category: course.category || 'General',
+        price: course.priceCents / 100, // Convert cents to dollars
+        duration: course.duration || '3hr 30min', // Default duration if not provided
+        lectures: course.modules?.reduce((total, module) => total + (module.lessons?.length || 0), 0) || 15, // Count lessons
+        image: course.coverImageUrl || "/PopularCourses/p1.png", // Use cover image or default
+        description: course.description,
+        difficulty: course.difficulty,
+        instructor: course.instructor?.name || 'Unknown Instructor'
+      }));
+      
+      setAllCourses(transformedCourses);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  // Static fallback courses in case API fails
+  const fallbackCourses = [
     {
       id: 1,
       title: "HTML, CSS, and JavaScript",
-      category: "Project Management",
+      category: "Development",
       price: 190.00,
       duration: "4hr 35min",
       lectures: 30,
@@ -39,7 +96,7 @@ const CoursePage = ({ navigateTo }) => {
     {
       id: 2,
       title: "Stakeholders Management",
-      category: "Development",
+      category: "Project Management",
       price: 160.00,
       duration: "2hr 30min",
       lectures: 20,
@@ -53,61 +110,7 @@ const CoursePage = ({ navigateTo }) => {
       duration: "3hr 35min",
       lectures: 25,
       image: "/PopularCourses/p3.png",
-    },
-    {
-      id: 4,
-      title: "UX Research & Usability Testing",
-      category: "UI/UX Design",
-      price: 180.00,
-      duration: "2hr 45min",
-      lectures: 22,
-      image: "/PopularCourses/p4.png",
-    },
-    {
-      id: 5,
-      title: "Financial Accounting Essentials",
-      category: "Accounting",
-      price: 140.00,
-      duration: "2hr 35min",
-      lectures: 20,
-      image: "/PopularCourses/p5.png",
-    },
-    {
-      id: 6,
-      title: "Introduction to Design Systems",
-      category: "UI/UX Design", 
-      price: 150.00,
-      duration: "3hr 30min",
-      lectures: 25,
-      image: "/PopularCourses/p6.png",
-    },
-    {
-      id: 7,
-      title: "Introduction to Design Systems",
-      category: "UI/UX Design",
-      price: 150.00,
-      duration: "3hr 35min",
-      lectures: 25,
-      image: "/PopularCourses/p2.png",
-    },
-    {
-      id: 8,
-      title: "Digital Marketing Strategy",
-      category: "Marketing",
-      price: 140.00,
-      duration: "2hr 35min",
-      lectures: 20,
-      image: "/PopularCourses/p3.png",
-    },
-    {
-      id: 9,
-      title: "HTML, CSS, and Beyond",
-      category: "Development",
-      price: 180.00,
-      duration: "4hr 35min",
-      lectures: 30,
-      image: "/PopularCourses/p4.png",
-    },
+    }
   ];
   return (
     <>
@@ -254,22 +257,48 @@ const CoursePage = ({ navigateTo }) => {
                       ))}
                   </div>
 
+                  {/* Loading State */}
+                  {loading && (
+                      <div className="text-center py-12">
+                          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+                          <p className="mt-4 text-gray-600">Loading courses...</p>
+                      </div>
+                  )}
+
+                  {/* Error State */}
+                  {error && !loading && (
+                      <div className="text-center py-12">
+                          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg max-w-md mx-auto">
+                              <p className="font-medium">Error loading courses</p>
+                              <p className="text-sm mt-1">{error}</p>
+                              <button 
+                                  onClick={fetchCourses}
+                                  className="mt-3 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                              >
+                                  Try Again
+                              </button>
+                          </div>
+                      </div>
+                  )}
+
                   {/* Course Grid - Showing filtered courses */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                      {(() => {
-                          const filteredCourses = allCourses.filter(
-                              course => activeFilter === 'All Categories' || course.category === activeFilter
-                          );
-
-                          if (filteredCourses.length === 0) {
-                              return (
-                                  <div className="col-span-full text-center py-12">
-                                      <p className="text-gray-600 text-lg">No courses found for this category. Try another filter.</p>
-                                  </div>
+                  {!loading && !error && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                          {(() => {
+                              const coursesToShow = allCourses.length > 0 ? allCourses : fallbackCourses;
+                              const filteredCourses = coursesToShow.filter(
+                                  course => activeFilter === 'All Categories' || course.category === activeFilter
                               );
-                          }
 
-                          return filteredCourses.map((course) => (
+                              if (filteredCourses.length === 0) {
+                                  return (
+                                      <div className="col-span-full text-center py-12">
+                                          <p className="text-gray-600 text-lg">No courses found for this category. Try another filter.</p>
+                                      </div>
+                                  );
+                              }
+
+                              return filteredCourses.map((course) => (
                               <div key={course.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
                                   {/* Course Image */}
                                   <div className="h-48 w-full relative flex items-center justify-center overflow-hidden">
@@ -314,7 +343,8 @@ const CoursePage = ({ navigateTo }) => {
                               </div>
                           ));
                       })()}
-                  </div>
+                      </div>
+                  )}
 
                   {/* Explore All Courses Button */}
                   <div className="text-center">

@@ -12,7 +12,7 @@ import forumRouter from "./src/routes/forumRoutes.js";
 const router = Router();
 router.use("/auth", userRouter);
 router.use("/admin", adminRouter)
-router.use("/course", courseRouter)
+router.use("/courses", courseRouter)  // Changed from "/course" to "/courses"
 router.use("/quiz", quizRouter)
 router.use("/assignment", assignmentRouter)
 router.use("/enrollment", enrollRouter)

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export default function AddNewCourse({ onClose, onCourseAdded }) {
+export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -10,10 +10,49 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
     difficulty: 'BEGINNER',
   });
   
-  const [thumbnailFile, setThumbnailFile] = useState(null);
-  const [contentFile, setContentFile] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Fetch course data when component mounts
+  useEffect(() => {
+    fetchCourseData();
+  }, [courseId]);
+
+  const fetchCourseData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch course data');
+      }
+
+      const course = await response.json();
+      
+      // Populate form with existing data
+      setFormData({
+        title: course.title || '',
+        category: course.category || '',
+        description: course.description || '',
+        price: (course.priceCents / 100).toFixed(2) || '',
+        difficulty: course.difficulty || 'BEGINNER',
+      });
+    } catch (error) {
+      console.error('Error fetching course:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -21,37 +60,6 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
       ...formData,
       [name]: value,
     });
-  };
-  
-  const handleThumbnailDrop = (e) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (files.length > 0 && ['image/png', 'image/jpeg', 'image/gif'].includes(files[0].type)) {
-      setThumbnailFile(files[0]);
-    }
-  };
-  
-  const handleContentDrop = (e) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      setContentFile(files[0]);
-    }
-  };
-  
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-  
-  const handleFileInputChange = (e, type) => {
-    const files = e.target.files;
-    if (files.length > 0) {
-      if (type === 'thumbnail') {
-        setThumbnailFile(files[0]);
-      } else {
-        setContentFile(files[0]);
-      }
-    }
   };
   
   const handleSubmit = async (e) => {
@@ -75,14 +83,10 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
         description: formData.description,
         priceCents: priceCents,
         difficulty: formData.difficulty,
-        coverImageUrl: thumbnailFile ? URL.createObjectURL(thumbnailFile) : null, // In production, upload to cloud storage first
-        isPublished: false, // Set as pending by default, requires admin approval
-        // For now, we'll create a basic structure without modules
-        modules: []
       };
 
-      const response = await fetch('http://localhost:3001/api/courses', {
-        method: 'POST',
+      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -92,32 +96,45 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create course');
+        throw new Error(errorData.error || 'Failed to update course');
       }
 
-      const newCourse = await response.json();
-      console.log('Course created successfully:', newCourse);
+      const updatedCourse = await response.json();
+      console.log('Course updated successfully:', updatedCourse);
       
       // Call the callback to refresh the course list
-      if (onCourseAdded) {
-        onCourseAdded(newCourse);
+      if (onCourseUpdated) {
+        onCourseUpdated(updatedCourse);
       }
       
       onClose();
     } catch (error) {
-      console.error('Error creating course:', error);
-      setError(error.message || 'Failed to create course. Please try again.');
+      console.error('Error updating course:', error);
+      setError(error.message || 'Failed to update course. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+            <p className="mt-2 text-gray-600">Loading course data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl mx-4">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header with title and close button */}
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-900">Add New Course</h2>
+          <h2 className="text-xl font-bold text-gray-900">Edit Course</h2>
           <button 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -134,6 +151,7 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
               {error}
             </div>
           )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Title */}
             <div>
@@ -177,7 +195,7 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
             </div>
           </div>
           
-          {/* Difficulty */}
+          {/* Difficulty and Price */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
@@ -239,83 +257,6 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
             />
           </div>
           
-          {/* File upload section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Thumbnail upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Upload Thumbnail
-              </label>
-              <div
-                onDrop={handleThumbnailDrop}
-                onDragOver={handleDragOver}
-                className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                
-                <div className="flex items-center mb-2">
-                  <label className="cursor-pointer bg-white px-3 py-1 rounded-md mr-2">
-                    <span className="text-red-600 font-medium">Upload a file</span>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept=".png,.jpg,.jpeg,.gif"
-                      onChange={(e) => handleFileInputChange(e, 'thumbnail')}
-                    />
-                  </label>
-                  <span className="text-gray-600">or drag and drop</span>
-                </div>
-                
-                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                
-                {thumbnailFile && (
-                  <div className="mt-2 text-sm text-gray-700">
-                    Selected: {thumbnailFile.name}
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Content upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Upload Content
-              </label>
-              <div
-                onDrop={handleContentDrop}
-                onDragOver={handleDragOver}
-                className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                
-                <div className="flex items-center mb-2">
-                  <label className="cursor-pointer bg-white px-3 py-1 rounded-md mr-2">
-                    <span className="text-red-600 font-medium">Upload a file</span>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept=".pdf,.zip,.mp4"
-                      onChange={(e) => handleFileInputChange(e, 'content')}
-                    />
-                  </label>
-                  <span className="text-gray-600">or drag and drop</span>
-                </div>
-                
-                <p className="text-xs text-gray-500">PDF, ZIP, MP4 up to 1GB</p>
-                
-                {contentFile && (
-                  <div className="mt-2 text-sm text-gray-700">
-                    Selected: {contentFile.name}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          
           {/* Submit button */}
           <div className="flex justify-end space-x-4">
             <button
@@ -331,7 +272,7 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
               className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating...' : 'Add Course'}
+              {isSubmitting ? 'Updating...' : 'Update Course'}
             </button>
           </div>
         </form>

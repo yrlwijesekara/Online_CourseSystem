@@ -39,7 +39,7 @@ model Course {
   slug          String   @unique
   description   String
   coverImageUrl String?
-  priceCents    Int      @default(0)
+  priceCents    BigInt   @default(0)
   isPublished   Boolean  @default(false)
   difficulty    String   @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
   createdAt     DateTime @default(now())

@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export const createCourse = async (req, res) => {
     try {
-        const { title, description, priceCents, difficulty, coverImageUrl, modules } = req.body;
+        const { title, description, priceCents, difficulty, coverImageUrl, modules, isPublished } = req.body;
         const instructorId = req.user.id;
 
         const course = await prisma.course.create({
@@ -16,6 +16,7 @@ export const createCourse = async (req, res) => {
                 priceCents: priceCents || 0,
                 difficulty: difficulty || "BEGINNER",
                 coverImageUrl,
+                isPublished: isPublished !== undefined ? isPublished : false, // Default to false (pending approval)
                 instructorId,
                 modules: modules
                     ? {
@@ -97,7 +98,12 @@ export const createLesson = async (req, res)=>{
 
     export const getAllCourses = async (req, res)=> {
         try {
+            // Check if this is an admin request
+            const isAdmin = req.user?.role === 'ADMIN';
+            const showAll = req.query.all === 'true' && isAdmin;
+            
             const courses = await prisma.course.findMany({
+                where: showAll ? {} : { isPublished: true }, // Only published courses for non-admin
                 include: {
                     instructor: {
                         select: {
@@ -293,5 +299,71 @@ export const deleteCourse= async (req, res) => {
             res.json(updatedCourse);
         } catch (err) {
             res.status(500).json({error: 'Failed to toggle course publication status'});
+        }
+    }
+
+    // Get pending courses for admin approval
+    export const getPendingCourses = async (req, res) => {
+        try {
+            const pendingCourses = await prisma.course.findMany({
+                where: { isPublished: false },
+                include: {
+                    instructor: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatarUrl: true,
+                        },
+                    },
+                    modules: {
+                        include: {
+                            lessons: true,
+                        },
+                    }
+                },
+            });
+            res.json(pendingCourses);
+        } catch (err) {
+            res.status(500).json({error: 'Failed to fetch pending courses'});
+        }
+    }
+
+    // Approve a course
+    export const approveCourse = async (req, res) => {
+        try {
+            const {id} = req.params;
+            const updatedCourse = await prisma.course.update({
+                where: {id: Number(id)},
+                data: {isPublished: true},
+                include: {
+                    instructor: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatarUrl: true,
+                        },
+                    }
+                }
+            });
+
+            res.json({message: 'Course approved successfully', course: updatedCourse});
+        } catch (err) {
+            res.status(500).json({error: 'Failed to approve course'});
+        }
+    }
+
+    // Reject a course
+    export const rejectCourse = async (req, res) => {
+        try {
+            const {id} = req.params;
+            // For now, we'll just delete rejected courses
+            // In a real app, you might want to keep them with a 'rejected' status
+            await prisma.course.delete({
+                where: {id: Number(id)}
+            });
+
+            res.json({message: 'Course rejected and removed successfully'});
+        } catch (err) {
+            res.status(500).json({error: 'Failed to reject course'});
         }
     }
