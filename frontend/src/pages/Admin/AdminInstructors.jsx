@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Eye, Star } from 'lucide-react';
-import AdminSideBar from '../components/AdminSideBar';
+import AdminSideBar from '../../components/AdminSideBar';
 
 const ManageInstructors = () => {
   const [instructors, setInstructors] = useState([
