@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X, LogOut } from "lucide-react";
 
 const Navbar = ({ navigateTo, currentPage = "home" }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,6 +42,10 @@ const Navbar = ({ navigateTo, currentPage = "home" }) => {
             Contact
           </li>
           <li className="hover:text-black/70 cursor-pointer">Profile</li>
+          <li className="hover:text-black/70 cursor-pointer flex items-center space-x-1">
+            <LogOut size={16} />
+            <span>Logout</span>
+          </li>
         </ul>
 
         {/* Enroll Now Button (desktop) */}
@@ -102,6 +106,10 @@ const Navbar = ({ navigateTo, currentPage = "home" }) => {
               Contact
             </li>
             <li className="hover:text-black/70 cursor-pointer">Profile</li>
+            <li className="hover:text-black/70 cursor-pointer flex items-center space-x-1">
+              <LogOut size={16} />
+              <span>Logout</span>
+            </li>
           </ul>
           <button className="mt-4 flex items-center justify-center space-x-3 border border-black px-4 py-2 rounded-full w-full hover:bg-black hover:text-white transition">
             <span>Enroll Now</span>
