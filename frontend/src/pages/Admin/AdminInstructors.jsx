@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Eye, Star } from 'lucide-react';
 import AdminSideBar from '../../components/AdminSideBar';
 
-const ManageInstructors = () => {
+const AdminInstructors = () => {
   const [instructors, setInstructors] = useState([
     {
       id: 1,
@@ -226,4 +226,4 @@ const ManageInstructors = () => {
   );
 };
 
-export default ManageInstructors;
+export default AdminInstructors;
