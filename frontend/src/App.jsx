@@ -8,6 +8,7 @@ import ContactUs from './pages/ContactUs';
 import AboutUs from './pages/AboutUs';
 import Admin from './pages/Admin/admin';
 import AdminCourses from './pages/Admin/AdminCourses';
+import AdminInstructors from './pages/Admin/AdminInstructors';
 
 
 function App() {
@@ -199,6 +200,8 @@ function App() {
         return <Admin navigateTo={navigateTo} />;
       case 'admin-courses':
         return <AdminCourses navigateTo={navigateTo} />;
+      case 'admin-instructors':
+        return <AdminInstructors navigateTo={navigateTo} />;
       default:
         return <SignInPage navigateTo={navigateTo} />;
     }
