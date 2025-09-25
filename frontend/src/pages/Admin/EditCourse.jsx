@@ -119,7 +119,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   };
   
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setIsSubmitting(true);
     setError('');
     
@@ -149,6 +149,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
       const numericCourseId = typeof courseId === 'string' ? courseId.replace('#', '') : courseId;
       console.log('Updating course ID:', numericCourseId);
 
+      // First, update the course data
       const response = await fetch(`http://localhost:3001/api/courses/${numericCourseId}`, {
         method: 'PUT',
         headers: {
@@ -167,9 +168,54 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
       const updatedCourse = await response.json();
       console.log('Course updated successfully:', updatedCourse);
       
+      // Handle file uploads if any files are selected
+      let fileUploadSuccess = true;
+      
+      if (thumbnailFile) {
+        const thumbnailFormData = new FormData();
+        thumbnailFormData.append('thumbnail', thumbnailFile);
+        
+        const thumbnailResponse = await fetch(`http://localhost:3001/api/courses/${numericCourseId}/thumbnail`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: thumbnailFormData
+        });
+        
+        if (!thumbnailResponse.ok) {
+          console.error('Thumbnail upload failed:', thumbnailResponse.status);
+          fileUploadSuccess = false;
+        }
+      }
+      
+      if (contentFile) {
+        const contentFormData = new FormData();
+        contentFormData.append('content', contentFile);
+        
+        const contentResponse = await fetch(`http://localhost:3001/api/courses/${numericCourseId}/content`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: contentFormData
+        });
+        
+        if (!contentResponse.ok) {
+          console.error('Content upload failed:', contentResponse.status);
+          fileUploadSuccess = false;
+        }
+      }
+      
       // Call the callback to refresh the course list
       if (onCourseUpdated) {
         onCourseUpdated(updatedCourse);
+      }
+      
+      if (!fileUploadSuccess) {
+        setError('Course data updated but there was an error uploading one or more files.');
+        setIsSubmitting(false);
+        return;
       }
       
       onClose();
@@ -210,7 +256,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="p-6 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-600">{error}</p>
@@ -465,7 +511,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
               </div>
             </div>
           </div>
-        </form>
+        </div>
         </div>
 
         {/* Fixed Footer */}
@@ -478,7 +524,8 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
             Cancel
           </button>
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={isSubmitting}
             className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
