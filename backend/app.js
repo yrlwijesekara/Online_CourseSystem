@@ -7,7 +7,17 @@ import routes from "./routes.js";
 
 const app = express();
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:3000" }));
+app.use(cors({ 
+  origin: [
+    "http://localhost:3000", 
+    "http://localhost:3001", 
+    "http://localhost:5173", // Vite default port
+    "http://localhost:5174", // Alternative Vite port
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 app.use(morgan("dev"));
 app.use("/api", routes);

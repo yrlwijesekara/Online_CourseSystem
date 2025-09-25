@@ -7,13 +7,10 @@ const SignInPage = ({ navigateTo }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
 
-  // Admin credentials
-  const adminEmail = 'admin@example.com';
-  const adminPassword = 'admin123';
-
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     
     // Simple validation
     if (!email || !password) {
@@ -21,22 +18,64 @@ const SignInPage = ({ navigateTo }) => {
       return;
     }
     
-    // Check if admin credentials
-    if (email === adminEmail && password === adminPassword) {
-      console.log('Admin login successful');
-      navigateTo('admin');
-      return;
-    }
-    
-    // For regular users
-    if (email.includes('@') && password.length >= 6) {
-      // In a real app, you would authenticate with a server here
-      console.log('Logging in with:', { email, password, rememberMe });
+    try {
+      const response = await fetch('http://localhost:3001/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store the token and user data in localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      console.log('Login successful:', data.user);
+
+      // Check if there's a redirect destination after login
+      const redirectPage = localStorage.getItem('redirectAfterLogin');
+      const redirectParams = localStorage.getItem('redirectParams');
       
-      // Navigate to home page after successful login
-      navigateTo('home');
-    } else {
-      setError('Invalid email or password. Password must be at least 6 characters.');
+      if (redirectPage) {
+        // Clear the redirect info
+        localStorage.removeItem('redirectAfterLogin');
+        
+        // Handle any params needed for the redirect
+        let params = {};
+        if (redirectParams) {
+          try {
+            params = JSON.parse(redirectParams);
+            localStorage.removeItem('redirectParams');
+          } catch (e) {
+            console.error('Error parsing redirect params:', e);
+          }
+        }
+        
+        // Navigate to the stored redirect page
+        console.log(`Redirecting to ${redirectPage} after login`);
+        navigateTo(redirectPage, params);
+      } else {
+        // No redirect found, navigate based on user role
+        if (data.user.role === 'ADMIN') {
+          navigateTo('admin');
+        } else {
+          navigateTo('home');
+        }
+      }
+
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.message || 'An error occurred during login. Please try again.');
     }
   };
 

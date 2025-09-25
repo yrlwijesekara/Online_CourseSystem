@@ -47,6 +47,13 @@ const AdminSideBar = ({ navigateTo }) => {
   ];
 
   const handleNavigation = (page) => {
+    if (page === 'signin') {
+      // Handle logout - clear localStorage and navigate to signin
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('currentPage');
+    }
+    
     if (navigateTo) {
       navigateTo(page);
     }
@@ -83,15 +90,15 @@ const AdminSideBar = ({ navigateTo }) => {
       <aside className={`
         fixed lg:static
         top-0 left-0 z-40
-        w-64 h-screen
+        w-64 h-screen lg:h-auto lg:min-h-full
         bg-white
         border-r border-gray-200
         transform transition-transform duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full lg:h-auto lg:min-h-full">
           {/* Header */}
-          <div className="flex items-center px-6 py-6 border-b border-gray-100">
+          <div className="flex items-center px-6 py-6 border-b border-gray-100 flex-shrink-0">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-red-500 rounded flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-white" />
