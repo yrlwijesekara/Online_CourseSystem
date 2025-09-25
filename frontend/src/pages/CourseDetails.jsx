@@ -116,16 +116,7 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
     <div className="min-h-screen bg-white">
       <Navbar navigateTo={navigateTo} />
       
-      {/* Back Button */}
-      <div className="max-w-7xl mx-auto px-4 pt-8">
-        <button 
-          onClick={() => navigateTo('courses')}
-          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-6"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Back to Courses
-        </button>
-      </div>
+      
 
       {/* Course Header */}
       <div className="max-w-7xl mx-auto px-4 py-8">

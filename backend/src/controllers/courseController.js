@@ -177,7 +177,19 @@ export const createLesson = async (req, res)=>{
     export const updateCourse = async (req, res)=> {
         try {
             const {id} = req.params;
-            const {title, description, priceCents, difficulty, coverImageUrl, modules} = req.body;
+            const {
+                title, 
+                description, 
+                fullDescription,
+                category,
+                difficulty, 
+                estimatedDuration,
+                prerequisites,
+                learningOutcomes,
+                language,
+                coverImageUrl, 
+                modules
+            } = req.body;
 
             //update course level fields if provided
             let updatedCourse = null;
@@ -186,10 +198,20 @@ export const createLesson = async (req, res)=>{
                 courseFieldUpdates.title = title;
             if (typeof description!== "undefined")
                 courseFieldUpdates.description = description;
-            if (typeof priceCents !== "undefined")
-                courseFieldUpdates.priceCents = priceCents;
+            if (typeof fullDescription!== "undefined")
+                courseFieldUpdates.fullDescription = fullDescription;
+            if (typeof category!== "undefined")
+                courseFieldUpdates.category = category;
             if (typeof difficulty !== "undefined")
                 courseFieldUpdates.difficulty = difficulty;
+            if (typeof estimatedDuration !== "undefined")
+                courseFieldUpdates.estimatedDuration = estimatedDuration;
+            if (typeof prerequisites !== "undefined")
+                courseFieldUpdates.prerequisites = prerequisites;
+            if (typeof learningOutcomes !== "undefined")
+                courseFieldUpdates.learningOutcomes = learningOutcomes;
+            if (typeof language !== "undefined")
+                courseFieldUpdates.language = language;
             if (typeof coverImageUrl !== "undefined")
                 courseFieldUpdates.coverImageUrl = coverImageUrl;
             if (Object.keys(courseFieldUpdates).length > 0) {

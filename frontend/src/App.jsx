@@ -17,12 +17,13 @@ function App() {
   
   // Check authentication status on app initialization
   useEffect(() => {
-    const checkAuthStatus = () => {
-      setIsLoading(true);
+    const checkAuthStatus = async () => {
+      console.log('Starting auth check...');
       
       try {
         const token = localStorage.getItem('token');
         const userString = localStorage.getItem('user');
+        console.log('Auth data found:', { hasToken: !!token, hasUser: !!userString });
         
         if (token && userString) {
           const user = JSON.parse(userString);
@@ -46,6 +47,7 @@ function App() {
           }
         } else {
           // No authentication data found, redirect to signin
+          console.log('No auth data found, redirecting to signin');
           setCurrentPage('signin');
         }
       } catch (error) {
@@ -55,14 +57,19 @@ function App() {
         localStorage.removeItem('user');
         localStorage.removeItem('currentPage');
         setCurrentPage('signin');
+      } finally {
+        // Always stop loading after auth check
+        console.log('Auth check completed, setting loading to false');
+        setIsLoading(false);
       }
-      
-      // Always stop loading after auth check
-      setIsLoading(false);
     };
 
-    // Check auth status immediately
-    checkAuthStatus();
+    // Small delay to prevent flash, then check authentication
+    const timer = setTimeout(() => {
+      checkAuthStatus();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
   
   // Function to navigate between pages
@@ -82,6 +89,7 @@ function App() {
 
   // Show loading spinner while checking authentication
   if (isLoading) {
+    console.log('Rendering loading screen, isLoading:', isLoading, 'currentPage:', currentPage);
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
@@ -94,18 +102,19 @@ function App() {
 
   // Fallback to signin if currentPage is null
   const pageToRender = currentPage || 'signin';
+  console.log('Rendering page:', pageToRender, 'currentPage:', currentPage, 'isLoading:', isLoading);
 
   return (
-    <>
-    {pageToRender === 'course' && <CoursePage navigateTo={navigateTo} />}
-    {pageToRender === 'signin' && <SignInPage navigateTo={navigateTo} />}
-    {pageToRender === 'signup' && <SignUpPage navigateTo={navigateTo} />}
-    {pageToRender === 'home' && <HomePage navigateTo={navigateTo} />}
-    {pageToRender === 'contact' && <ContactUs navigateTo={navigateTo} />}
-    {pageToRender === 'about' && <AboutUs navigateTo={navigateTo} />}
-    {pageToRender === 'admin' && <Admin navigateTo={navigateTo} />}
-    {pageToRender === 'admin-courses' && <AdminCourses navigateTo={navigateTo} />}
-    </>
+    <div className="min-h-screen">
+      {pageToRender === 'course' && <CoursePage navigateTo={navigateTo} />}
+      {pageToRender === 'signin' && <SignInPage navigateTo={navigateTo} />}
+      {pageToRender === 'signup' && <SignUpPage navigateTo={navigateTo} />}
+      {pageToRender === 'home' && <HomePage navigateTo={navigateTo} />}
+      {pageToRender === 'contact' && <ContactUs navigateTo={navigateTo} />}
+      {pageToRender === 'about' && <AboutUs navigateTo={navigateTo} />}
+      {pageToRender === 'admin' && <Admin navigateTo={navigateTo} />}
+      {pageToRender === 'admin-courses' && <AdminCourses navigateTo={navigateTo} />}
+    </div>
   )
 } 
 

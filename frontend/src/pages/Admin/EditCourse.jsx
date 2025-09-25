@@ -12,7 +12,6 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
     prerequisites: '',
     learningOutcomes: '',
     language: 'English',
-    level: 'BEGINNER',
   });
   
   const [thumbnailFile, setThumbnailFile] = useState(null);
@@ -64,7 +63,11 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+      // Ensure courseId is numeric
+      const numericCourseId = typeof courseId === 'string' ? courseId.replace('#', '') : courseId;
+      console.log('Fetching course data for ID:', numericCourseId);
+
+      const response = await fetch(`http://localhost:3001/api/courses/${numericCourseId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -87,7 +90,6 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
         prerequisites: course.prerequisites || '',
         learningOutcomes: course.learningOutcomes || '',
         language: course.language || 'English',
-        level: course.level || 'BEGINNER',
       });
     } catch (error) {
       console.error('Error fetching course:', error);
@@ -117,37 +119,32 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
         throw new Error('Authentication token not found. Please login again.');
       }
 
-      // Create FormData to handle file uploads
-      const formDataToSend = new FormData();
-      
-      // Add all form fields
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('fullDescription', formData.fullDescription);
-      formDataToSend.append('difficulty', formData.difficulty);
-      formDataToSend.append('estimatedDuration', formData.estimatedDuration);
-      formDataToSend.append('prerequisites', formData.prerequisites);
-      formDataToSend.append('learningOutcomes', formData.learningOutcomes);
-      formDataToSend.append('language', formData.language);
-      formDataToSend.append('level', formData.level);
-      
-      // Add thumbnail file if selected
-      if (thumbnailFile) {
-        formDataToSend.append('thumbnail', thumbnailFile);
-      }
-      
-      // Add content file if selected
-      if (contentFile) {
-        formDataToSend.append('content', contentFile);
-      }
+      // Prepare course data for API
+      const courseData = {
+        title: formData.title,
+        category: formData.category,
+        description: formData.description,
+        fullDescription: formData.fullDescription,
+        difficulty: formData.difficulty,
+        estimatedDuration: formData.estimatedDuration,
+        prerequisites: formData.prerequisites,
+        learningOutcomes: formData.learningOutcomes,
+        language: formData.language,
+      };
 
-      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+      console.log('Sending course update data:', courseData);
+
+      // Ensure courseId is numeric
+      const numericCourseId = typeof courseId === 'string' ? courseId.replace('#', '') : courseId;
+      console.log('Updating course ID:', numericCourseId);
+
+      const response = await fetch(`http://localhost:3001/api/courses/${numericCourseId}`, {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: formDataToSend
+        body: JSON.stringify(courseData)
       });
 
       if (!response.ok) {
