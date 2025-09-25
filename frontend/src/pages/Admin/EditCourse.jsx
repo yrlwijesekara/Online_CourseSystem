@@ -12,7 +12,6 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
     prerequisites: '',
     learningOutcomes: '',
     language: 'English',
-    level: 'BEGINNER',
   });
   
   const [thumbnailFile, setThumbnailFile] = useState(null);
@@ -60,21 +59,36 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   const fetchCourseData = async () => {
     try {
       const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      
+      console.log('Auth check - Token exists:', !!token, 'User exists:', !!user);
+      if (user) {
+        const userData = JSON.parse(user);
+        console.log('User role:', userData.role, 'User ID:', userData.id);
+      }
+      
       if (!token) {
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+      // Ensure courseId is numeric
+      const numericCourseId = typeof courseId === 'string' ? courseId.replace('#', '') : courseId;
+      console.log('Fetching course data for ID:', numericCourseId);
+
+      const response = await fetch(`http://localhost:3001/api/courses/${numericCourseId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch course data');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Fetch failed with status:', response.status, 'Error:', errorData);
+        throw new Error(errorData.error || `Failed to fetch course data (${response.status})`);
       }
 
       const course = await response.json();
+      console.log('Fetched course data:', course);
       
       // Populate form with existing data
       setFormData({
@@ -87,7 +101,6 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
         prerequisites: course.prerequisites || '',
         learningOutcomes: course.learningOutcomes || '',
         language: course.language || 'English',
-        level: course.level || 'BEGINNER',
       });
     } catch (error) {
       console.error('Error fetching course:', error);
@@ -106,7 +119,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   };
   
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setIsSubmitting(true);
     setError('');
     
@@ -117,50 +130,92 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
         throw new Error('Authentication token not found. Please login again.');
       }
 
-      // Create FormData to handle file uploads
-      const formDataToSend = new FormData();
-      
-      // Add all form fields
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('fullDescription', formData.fullDescription);
-      formDataToSend.append('difficulty', formData.difficulty);
-      formDataToSend.append('estimatedDuration', formData.estimatedDuration);
-      formDataToSend.append('prerequisites', formData.prerequisites);
-      formDataToSend.append('learningOutcomes', formData.learningOutcomes);
-      formDataToSend.append('language', formData.language);
-      formDataToSend.append('level', formData.level);
-      
-      // Add thumbnail file if selected
-      if (thumbnailFile) {
-        formDataToSend.append('thumbnail', thumbnailFile);
-      }
-      
-      // Add content file if selected
-      if (contentFile) {
-        formDataToSend.append('content', contentFile);
-      }
+      // Prepare course data for API
+      const courseData = {
+        title: formData.title,
+        category: formData.category,
+        description: formData.description,
+        fullDescription: formData.fullDescription,
+        difficulty: formData.difficulty,
+        estimatedDuration: formData.estimatedDuration,
+        prerequisites: formData.prerequisites,
+        learningOutcomes: formData.learningOutcomes,
+        language: formData.language,
+      };
 
-      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+      console.log('Sending course update data:', courseData);
+
+      // Ensure courseId is numeric
+      const numericCourseId = typeof courseId === 'string' ? courseId.replace('#', '') : courseId;
+      console.log('Updating course ID:', numericCourseId);
+
+      // First, update the course data
+      const response = await fetch(`http://localhost:3001/api/courses/${numericCourseId}`, {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: formDataToSend
+        body: JSON.stringify(courseData)
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update course');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Update failed with status:', response.status, 'Error:', errorData);
+        throw new Error(errorData.error || `Failed to update course (${response.status})`);
       }
 
       const updatedCourse = await response.json();
       console.log('Course updated successfully:', updatedCourse);
       
+      // Handle file uploads if any files are selected
+      let fileUploadSuccess = true;
+      
+      if (thumbnailFile) {
+        const thumbnailFormData = new FormData();
+        thumbnailFormData.append('thumbnail', thumbnailFile);
+        
+        const thumbnailResponse = await fetch(`http://localhost:3001/api/courses/${numericCourseId}/thumbnail`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: thumbnailFormData
+        });
+        
+        if (!thumbnailResponse.ok) {
+          console.error('Thumbnail upload failed:', thumbnailResponse.status);
+          fileUploadSuccess = false;
+        }
+      }
+      
+      if (contentFile) {
+        const contentFormData = new FormData();
+        contentFormData.append('content', contentFile);
+        
+        const contentResponse = await fetch(`http://localhost:3001/api/courses/${numericCourseId}/content`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: contentFormData
+        });
+        
+        if (!contentResponse.ok) {
+          console.error('Content upload failed:', contentResponse.status);
+          fileUploadSuccess = false;
+        }
+      }
+      
       // Call the callback to refresh the course list
       if (onCourseUpdated) {
         onCourseUpdated(updatedCourse);
+      }
+      
+      if (!fileUploadSuccess) {
+        setError('Course data updated but there was an error uploading one or more files.');
+        setIsSubmitting(false);
+        return;
       }
       
       onClose();
@@ -201,7 +256,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="p-6 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-600">{error}</p>
@@ -456,7 +511,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
               </div>
             </div>
           </div>
-        </form>
+        </div>
         </div>
 
         {/* Fixed Footer */}
@@ -469,7 +524,8 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
             Cancel
           </button>
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={isSubmitting}
             className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >

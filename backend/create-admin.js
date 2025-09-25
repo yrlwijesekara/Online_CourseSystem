@@ -3,48 +3,75 @@ import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-async function createNewAdmin() {
-  console.log('Creating a new admin user...');
+async function createTestUsers() {
+  console.log('Creating test users for different roles...');
 
-  // New admin credentials
-  const newAdminEmail = 'admin2@courseplatform.com';
-  const newAdminPassword = 'NewAdmin123!';
-  
-  // Check if this admin already exists
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: newAdminEmail }
-  });
-
-  if (existingAdmin) {
-    console.log('This admin user already exists:', newAdminEmail);
-    return;
-  }
-
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(newAdminPassword, 10);
-
-  // Create new admin user
-  const admin = await prisma.user.create({
-    data: {
-      email: newAdminEmail,
-      password: hashedPassword,
-      name: 'New Admin User',
+  const users = [
+    {
+      email: 'admin@courseplatform.com',
+      password: 'Admin123!',
+      name: 'Main Admin',
       role: 'ADMIN',
-      bio: 'Secondary Administrator',
-      avatarUrl: null
+      bio: 'Main Administrator'
+    },
+    {
+      email: 'instructor@courseplatform.com',
+      password: 'Instructor123!',
+      name: 'Test Instructor',
+      role: 'INSTRUCTOR',
+      bio: 'Course Instructor'
+    },
+    {
+      email: 'student@courseplatform.com',
+      password: 'Student123!',
+      name: 'Test Student',
+      role: 'STUDENT',
+      bio: 'Course Student'
     }
-  });
+  ];
 
-  console.log('✅ New Admin user created successfully!');
-  console.log('📧 Email:', newAdminEmail);
-  console.log('🔑 Password:', newAdminPassword);
-  console.log('👤 User ID:', admin.id);
-  console.log('🎭 Role:', admin.role);
+  console.log('\n📋 User Accounts Created:');
+  console.log('=========================');
+
+  for (const user of users) {
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: user.email }
+    });
+
+    if (existingUser) {
+      console.log(`\n👤 ${user.role} account already exists:`);
+      console.log(`📧 Email: ${user.email}`);
+      console.log(`🔑 Password: ${user.password}`);
+      continue;
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+
+    // Create new user
+    const createdUser = await prisma.user.create({
+      data: {
+        email: user.email,
+        password: hashedPassword,
+        name: user.name,
+        role: user.role,
+        bio: user.bio,
+        avatarUrl: null
+      }
+    });
+
+    console.log(`\n✅ New ${user.role} account created:`);
+    console.log(`📧 Email: ${user.email}`);
+    console.log(`🔑 Password: ${user.password}`);
+    console.log(`👤 User ID: ${createdUser.id}`);
+    console.log(`🎭 Role: ${createdUser.role}`);
+  }
 }
 
-createNewAdmin()
+createTestUsers()
   .catch((e) => {
-    console.error('❌ Error creating admin:', e);
+    console.error('❌ Error creating users:', e);
     process.exit(1);
   })
   .finally(async () => {
