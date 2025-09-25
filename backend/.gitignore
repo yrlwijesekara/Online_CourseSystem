@@ -1,0 +1,4 @@
+/node_modules/
+/.idea/
+/prisma/seed.js
+.DS_Store
