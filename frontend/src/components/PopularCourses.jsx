@@ -152,9 +152,9 @@ const PopularCourses = () => {
                   <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
                     {course.category}
                   </span>
-                  <span className="text-2xl font-bold text-green-500">
+                  {/* <span className="text-2xl font-bold text-green-500">
                     ${course.price.toFixed(2)}
-                  </span>
+                  </span> */}
                 </div>
 
                 <h4 className="font-bold text-gray-900 text-lg mb-4 leading-tight">
