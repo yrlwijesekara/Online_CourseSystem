@@ -5,7 +5,20 @@ const prisma = new PrismaClient();
 
 export const createCourse = async (req, res) => {
     try {
-        const { title, description, priceCents, difficulty, coverImageUrl, modules, isPublished } = req.body;
+        const { 
+            title, 
+            description, 
+            fullDescription,
+            category, 
+            difficulty, 
+            coverImageUrl, 
+            estimatedDuration,
+            prerequisites,
+            learningOutcomes,
+            language,
+            modules, 
+            isPublished 
+        } = req.body;
         const instructorId = req.user.id;
 
         const course = await prisma.course.create({
@@ -13,9 +26,14 @@ export const createCourse = async (req, res) => {
                 title,
                 slug: title.toLowerCase().replace(/\s+/g, "-"),
                 description,
-                priceCents: priceCents || 0,
+                fullDescription,
+                category: category || "General",
                 difficulty: difficulty || "BEGINNER",
                 coverImageUrl,
+                estimatedDuration,
+                prerequisites,
+                learningOutcomes,
+                language: language || "English",
                 isPublished: isPublished !== undefined ? isPublished : false, // Default to false (pending approval)
                 instructorId,
                 modules: modules

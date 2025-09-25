@@ -236,12 +236,12 @@ export default function AdminCourses({ navigateTo }) {
     };
 
     return (
-        <div className="flex bg-gray-50">
+        <div className="flex min-h-screen bg-gray-50">
             {/* Admin Sidebar */}
             <AdminSideBar navigateTo={navigateTo} />
 
             {/* Main Content */}
-            <div className="flex-1  h-full p-8 overflow-hidden">
+            <div className="flex-1 p-8">
                 {/* Header - Title and Add Button */}
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">Manage Courses</h1>

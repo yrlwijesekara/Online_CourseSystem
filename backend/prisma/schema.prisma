@@ -34,34 +34,31 @@ model User {
 }
 
 model Course {
-  id            Int      @id @default(autoincrement())
-  title         String
-  slug          String   @unique
-  description   String
-  coverImageUrl String?
-  priceCents    BigInt   @default(0)
-  isPublished   Boolean  @default(false)
-  difficulty    String   @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  title            String
+  slug             String   @unique
+  description      String
+  fullDescription  String?
+  category         String   @default("General")
+  coverImageUrl    String?
+  isPublished      Boolean  @default(false)
+  difficulty       String   @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  estimatedDuration String?
+  prerequisites    String?
+  learningOutcomes String?
+  language         String   @default("English")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   instructorId Int
   instructor   User          @relation("InstructorCourses", fields: [instructorId], references: [id])
   modules      Module[]
   enrollments  Enrollment[]
-  //categories   Category[]    @relation("CourseCategories", references: [id])
   forums       ForumPost[]
   certificates Certificate[]
-
-  Category Category[] @relation("CourseCategories")
 }
 
-model Category {
-  id      Int      @id @default(autoincrement())
-  name    String   @unique
-  slug    String   @unique
-  courses Course[] @relation("CourseCategories")
-}
+
 
 model Module {
   id        Int      @id @default(autoincrement())

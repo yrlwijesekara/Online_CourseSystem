@@ -5,6 +5,7 @@ import BestTalents from '../components/BestTalents';
 import ReviewStudents from '../components/ReviewStudents';
 import Footer from '../components/Footer';
 import { ArrowUpRight } from 'lucide-react';
+import CourseDetails from './CourseDetails';
 
 const CoursePage = ({ navigateTo }) => {
   // State to track the active filter category
@@ -12,6 +13,8 @@ const CoursePage = ({ navigateTo }) => {
   const [allCourses, setAllCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [showCourseDetails, setShowCourseDetails] = useState(false);
   
   // List of all categories for the filter
   const categories = [
@@ -112,6 +115,32 @@ const CoursePage = ({ navigateTo }) => {
       image: "/PopularCourses/p3.png",
     }
   ];
+
+  const handleViewCourseDetails = (courseId) => {
+    setSelectedCourseId(courseId);
+    setShowCourseDetails(true);
+  };
+
+  const handleCloseCourseDetails = () => {
+    setShowCourseDetails(false);
+    setSelectedCourseId(null);
+  };
+
+  // Filtered courses based on selected category
+  const filteredCourses = activeFilter === 'All Categories' 
+    ? allCourses 
+    : allCourses.filter(course => course.category === activeFilter);
+
+  if (showCourseDetails && selectedCourseId) {
+    return (
+      <CourseDetails 
+        courseId={selectedCourseId}
+        onClose={handleCloseCourseDetails}
+        navigateTo={navigateTo}
+      />
+    );
+  }
+
   return (
     <>
       <div className="course-page">
@@ -214,10 +243,13 @@ const CoursePage = ({ navigateTo }) => {
 
                           {/* Price and action button */}
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
-                              <div className="text-[24px] md:text-[32px] font-semibold text-green-600 md:text-[#011813]">$190.00</div>
+                              <div className="text-[24px] md:text-[32px] font-semibold text-green-600 md:text-[#011813]">Free Course</div>
 
                               <div className="relative w-full sm:w-auto">
-                                  <button className="group w-full sm:w-auto flex items-center justify-center sm:justify-start border border-black rounded-full pl-5 pr-12 py-2 md:py-3 relative hover:bg-[#011813] hover:text-white transition-all duration-300">
+                                  <button 
+                                      onClick={() => handleViewCourseDetails(allCourses[0]?.id)}
+                                      className="group w-full sm:w-auto flex items-center justify-center sm:justify-start border border-black rounded-full pl-5 pr-12 py-2 md:py-3 relative hover:bg-[#011813] hover:text-white transition-all duration-300"
+                                  >
                                       <span className="text-[#011813] font-medium group-hover:text-green-600">View Details</span>
                                       <div className="absolute right-0 top-0 bottom-0 bg-[#011813] rounded-full w-10 h-10 flex items-center justify-center">
                                           <ArrowUpRight size={16} color="black" className="transform transition-transform group-hover:translate-x-0.5 " />
@@ -299,7 +331,7 @@ const CoursePage = ({ navigateTo }) => {
                               }
 
                               return filteredCourses.map((course) => (
-                              <div key={course.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+                              <div key={course.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
                                   {/* Course Image */}
                                   <div className="h-48 w-full relative flex items-center justify-center overflow-hidden">
                                       <img src={course.image} alt={course.title} className="object-cover w-full h-full" />
@@ -333,11 +365,14 @@ const CoursePage = ({ navigateTo }) => {
                                           </div>
                                       </div>
 
-                                      <div className="flex justify-between items-center border-t border-gray-100 pt-4">
-                                          <div className="text-2xl font-bold text-green-500">
-                                              ${course.price.toFixed(2)}
-                                          </div>
-                                          <button className="text-sm font-medium text-gray-700 hover:text-green-500">View Details</button>
+                                      <div className="flex justify-between items-center">
+                                        <button 
+                                          onClick={() => handleViewCourseDetails(course.id)}
+                                          className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                                        >
+                                          View Details
+                                        </button>
+                                        <span className="text-2xl font-bold text-red-600">Free</span>
                                       </div>
                                   </div>
                               </div>
