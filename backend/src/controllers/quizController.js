@@ -2,9 +2,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Instructor creates quiz with questions
+// Instructor or Admin creates quiz with questions
 export const createQuizWithQuestions = async (req, res) => {
   try {
+    // Check if user is instructor or admin
+    if (req.user.role !== 'INSTRUCTOR' && req.user.role !== 'ADMIN') {
+      return res.status(403).json({error: 'Only instructors and admins can create quizzes'});
+    }
+    
     const { lessonId, title, questions } = req.body;
     const instructorId = req.user.id;
 
@@ -180,6 +185,11 @@ export const submitQuiz = async (req, res) => {
 // Delete quiz
 export const deleteQuiz = async (req, res) => {
     try {
+        // Check if user is instructor or admin
+        if (req.user.role !== 'INSTRUCTOR' && req.user.role !== 'ADMIN') {
+            return res.status(403).json({error: 'Only instructors and admins can delete quizzes'});
+        }
+        
         const quizId = Number(req.params.id);
         if (isNaN(quizId)) return res.status(400).json({ error: "Invalid quiz ID" });
 
@@ -235,6 +245,11 @@ export const getQuizSubmissions = async (req, res) => {
 
 export const updateQuiz = async (req, res) => {
     try {
+        // Check if user is instructor or admin
+        if (req.user.role !== 'INSTRUCTOR' && req.user.role !== 'ADMIN') {
+            return res.status(403).json({error: 'Only instructors and admins can update quizzes'});
+        }
+        
         const quizId = Number(req.params.id);
         if (isNaN(quizId)) return res.status(400).json({ error: "Invalid quiz ID" });
 

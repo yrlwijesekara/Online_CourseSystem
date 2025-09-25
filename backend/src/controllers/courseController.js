@@ -132,7 +132,16 @@ export const createLesson = async (req, res)=>{
                     },
                     modules: {
                         include: {
-                            lessons: true,
+                            lessons: {
+                                include: {
+                                    assignments: true,
+                                    quizzes: {
+                                        include: {
+                                            questions: true
+                                        }
+                                    }
+                                }
+                            },
                         },
                     },
                     // Include enrollments to get count
@@ -156,11 +165,21 @@ export const createLesson = async (req, res)=>{
                             id: true,
                             name: true,
                             avatarUrl: true,
+                            bio: true,
                         },
                     },
                     modules: {
                         include: {
-                            lessons: true,
+                            lessons: {
+                                include: {
+                                    assignments: true,
+                                    quizzes: {
+                                        include: {
+                                            questions: true
+                                        }
+                                    }
+                                }
+                            },
                         },
                     },
                     // Include enrollments to get count

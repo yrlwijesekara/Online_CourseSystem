@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Plus, Trash2, BookOpen, FileText, HelpCircle } from 'lucide-react';
 
 export default function AddNewCourse({ onClose, onCourseAdded }) {
   const [formData, setFormData] = useState({
@@ -14,6 +14,23 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
     language: 'English',
     level: 'BEGINNER',
   });
+  
+  const [modules, setModules] = useState([
+    {
+      title: 'Module 1',
+      order: 1,
+      lessons: [
+        {
+          title: 'Introduction',
+          contentType: 'ARTICLE',
+          text: '',
+          order: 1,
+          assignments: [],
+          quizzes: []
+        }
+      ]
+    }
+  ]);
   
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [contentFile, setContentFile] = useState(null);
@@ -84,8 +101,7 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
         language: formData.language,
         coverImageUrl: thumbnailFile ? URL.createObjectURL(thumbnailFile) : null, // In production, upload to cloud storage first
         isPublished: false, // Set as pending by default, requires admin approval
-        // For now, we'll create a basic structure without modules
-        modules: []
+        modules: modules
       };
 
       const response = await fetch('http://localhost:3001/api/courses', {
@@ -313,6 +329,376 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-vertical"
                 placeholder="What should students know before taking this course?"
               />
+            </div>
+          </div>
+
+          {/* Course Structure Section */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Course Structure</h3>
+            
+            <div className="space-y-6">
+              {modules.map((module, moduleIndex) => (
+                <div key={moduleIndex} className="border rounded-lg p-4 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Module Title
+                      </label>
+                      <input 
+                        type="text"
+                        value={module.title}
+                        onChange={e => {
+                          const newModules = [...modules];
+                          newModules[moduleIndex].title = e.target.value;
+                          setModules(newModules);
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                        placeholder="Enter module title"
+                      />
+                    </div>
+                    <button 
+                      type="button"
+                      className="ml-4 p-2 text-red-500 hover:text-red-700"
+                      onClick={() => {
+                        if (modules.length > 1) {
+                          const newModules = modules.filter((_, i) => i !== moduleIndex);
+                          setModules(newModules);
+                        } else {
+                          alert('Course needs at least one module');
+                        }
+                      }}
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+
+                  {/* Lessons */}
+                  <div className="pl-4 border-l-2 border-gray-200 space-y-4">
+                    <h4 className="font-medium text-gray-800">Lessons</h4>
+                    
+                    {module.lessons.map((lesson, lessonIndex) => (
+                      <div key={lessonIndex} className="border rounded-lg p-4 space-y-4 bg-gray-50">
+                        <div className="flex justify-between items-center">
+                          <div className="flex-1">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Lesson Title
+                            </label>
+                            <input 
+                              type="text"
+                              value={lesson.title}
+                              onChange={e => {
+                                const newModules = [...modules];
+                                newModules[moduleIndex].lessons[lessonIndex].title = e.target.value;
+                                setModules(newModules);
+                              }}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                              placeholder="Enter lesson title"
+                            />
+                          </div>
+                          <button 
+                            type="button"
+                            className="ml-4 p-2 text-red-500 hover:text-red-700"
+                            onClick={() => {
+                              if (module.lessons.length > 1) {
+                                const newModules = [...modules];
+                                newModules[moduleIndex].lessons = module.lessons.filter((_, i) => i !== lessonIndex);
+                                setModules(newModules);
+                              } else {
+                                alert('Module needs at least one lesson');
+                              }
+                            }}
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+                        
+                        {/* Content Type */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Content Type
+                          </label>
+                          <select
+                            value={lesson.contentType}
+                            onChange={e => {
+                              const newModules = [...modules];
+                              newModules[moduleIndex].lessons[lessonIndex].contentType = e.target.value;
+                              setModules(newModules);
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                          >
+                            <option value="ARTICLE">Article</option>
+                            <option value="VIDEO">Video</option>
+                            <option value="PDF">PDF</option>
+                          </select>
+                        </div>
+
+                        {/* Lesson Content */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Lesson Content
+                          </label>
+                          <textarea
+                            value={lesson.text}
+                            onChange={e => {
+                              const newModules = [...modules];
+                              newModules[moduleIndex].lessons[lessonIndex].text = e.target.value;
+                              setModules(newModules);
+                            }}
+                            rows={3}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-vertical"
+                            placeholder="Enter lesson content..."
+                          />
+                        </div>
+                        
+                        {/* Assignments */}
+                        <div className="pl-4 border-l-2 border-blue-200 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h5 className="font-medium text-blue-800 flex items-center">
+                              <FileText size={18} className="mr-2 text-blue-600" />
+                              Assignments
+                            </h5>
+                            <button
+                              type="button"
+                              className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
+                              onClick={() => {
+                                const newModules = [...modules];
+                                if (!newModules[moduleIndex].lessons[lessonIndex].assignments) {
+                                  newModules[moduleIndex].lessons[lessonIndex].assignments = [];
+                                }
+                                newModules[moduleIndex].lessons[lessonIndex].assignments.push({
+                                  title: `Assignment ${(lesson.assignments?.length || 0) + 1}`,
+                                  description: '',
+                                  dueDate: ''
+                                });
+                                setModules(newModules);
+                              }}
+                            >
+                              <Plus size={16} className="mr-1" /> Add Assignment
+                            </button>
+                          </div>
+                          
+                          {lesson.assignments && lesson.assignments.length > 0 ? (
+                            <div className="space-y-3">
+                              {lesson.assignments.map((assignment, assignmentIndex) => (
+                                <div key={assignmentIndex} className="bg-white p-3 rounded border shadow-sm">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <input
+                                      type="text"
+                                      value={assignment.title}
+                                      onChange={e => {
+                                        const newModules = [...modules];
+                                        newModules[moduleIndex].lessons[lessonIndex].assignments[assignmentIndex].title = e.target.value;
+                                        setModules(newModules);
+                                      }}
+                                      className="flex-1 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                      placeholder="Assignment title"
+                                    />
+                                    <button
+                                      type="button"
+                                      className="ml-2 text-red-500 hover:text-red-700"
+                                      onClick={() => {
+                                        const newModules = [...modules];
+                                        newModules[moduleIndex].lessons[lessonIndex].assignments = 
+                                          lesson.assignments.filter((_, i) => i !== assignmentIndex);
+                                        setModules(newModules);
+                                      }}
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
+                                  
+                                  <textarea
+                                    value={assignment.description}
+                                    onChange={e => {
+                                      const newModules = [...modules];
+                                      newModules[moduleIndex].lessons[lessonIndex].assignments[assignmentIndex].description = e.target.value;
+                                      setModules(newModules);
+                                    }}
+                                    className="w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm mb-2"
+                                    placeholder="Assignment description"
+                                    rows={2}
+                                  />
+                                  
+                                  <div className="flex items-center">
+                                    <label className="text-xs text-gray-600 mr-2">Due Date:</label>
+                                    <input
+                                      type="date"
+                                      value={assignment.dueDate}
+                                      onChange={e => {
+                                        const newModules = [...modules];
+                                        newModules[moduleIndex].lessons[lessonIndex].assignments[assignmentIndex].dueDate = e.target.value;
+                                        setModules(newModules);
+                                      }}
+                                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">No assignments yet. Add an assignment using the button above.</p>
+                          )}
+                        </div>
+                        
+                        {/* Quizzes */}
+                        <div className="pl-4 border-l-2 border-green-200 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h5 className="font-medium text-green-800 flex items-center">
+                              <HelpCircle size={18} className="mr-2 text-green-600" />
+                              Quizzes
+                            </h5>
+                            <button
+                              type="button"
+                              className="text-green-600 hover:text-green-800 flex items-center text-sm"
+                              onClick={() => {
+                                const newModules = [...modules];
+                                if (!newModules[moduleIndex].lessons[lessonIndex].quizzes) {
+                                  newModules[moduleIndex].lessons[lessonIndex].quizzes = [];
+                                }
+                                newModules[moduleIndex].lessons[lessonIndex].quizzes.push({
+                                  title: `Quiz ${(lesson.quizzes?.length || 0) + 1}`,
+                                  totalMarks: 10,
+                                  questions: [
+                                    {
+                                      text: 'Sample question',
+                                      type: 'MCQ',
+                                      options: 'Option A, Option B, Option C',
+                                      correct: 'Option A',
+                                      marks: 1
+                                    }
+                                  ]
+                                });
+                                setModules(newModules);
+                              }}
+                            >
+                              <Plus size={16} className="mr-1" /> Add Quiz
+                            </button>
+                          </div>
+                          
+                          {lesson.quizzes && lesson.quizzes.length > 0 ? (
+                            <div className="space-y-3">
+                              {lesson.quizzes.map((quiz, quizIndex) => (
+                                <div key={quizIndex} className="bg-white p-3 rounded border shadow-sm">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <input
+                                      type="text"
+                                      value={quiz.title}
+                                      onChange={e => {
+                                        const newModules = [...modules];
+                                        newModules[moduleIndex].lessons[lessonIndex].quizzes[quizIndex].title = e.target.value;
+                                        setModules(newModules);
+                                      }}
+                                      className="flex-1 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                                      placeholder="Quiz title"
+                                    />
+                                    <button
+                                      type="button"
+                                      className="ml-2 text-red-500 hover:text-red-700"
+                                      onClick={() => {
+                                        const newModules = [...modules];
+                                        newModules[moduleIndex].lessons[lessonIndex].quizzes = 
+                                          lesson.quizzes.filter((_, i) => i !== quizIndex);
+                                        setModules(newModules);
+                                      }}
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
+                                  
+                                  <div className="flex items-center mb-2">
+                                    <label className="text-xs text-gray-600 mr-2">Total Marks:</label>
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      value={quiz.totalMarks}
+                                      onChange={e => {
+                                        const newModules = [...modules];
+                                        newModules[moduleIndex].lessons[lessonIndex].quizzes[quizIndex].totalMarks = 
+                                          parseInt(e.target.value) || 10;
+                                        setModules(newModules);
+                                      }}
+                                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between text-sm text-gray-700">
+                                      <span>Questions: {quiz.questions?.length || 0}</span>
+                                      <button
+                                        type="button"
+                                        className="text-green-600 hover:text-green-800 text-xs"
+                                        onClick={() => {
+                                          const newModules = [...modules];
+                                          if (!newModules[moduleIndex].lessons[lessonIndex].quizzes[quizIndex].questions) {
+                                            newModules[moduleIndex].lessons[lessonIndex].quizzes[quizIndex].questions = [];
+                                          }
+                                          newModules[moduleIndex].lessons[lessonIndex].quizzes[quizIndex].questions.push({
+                                            text: 'New question',
+                                            type: 'MCQ',
+                                            options: 'Option A, Option B, Option C',
+                                            correct: 'Option A',
+                                            marks: 1
+                                          });
+                                          setModules(newModules);
+                                        }}
+                                      >
+                                        + Add Question
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">No quizzes yet. Add a quiz using the button above.</p>
+                          )}
+                        </div>
+                        
+                      </div>
+                    ))}
+                    
+                    <button
+                      type="button"
+                      className="mt-2 px-3 py-2 bg-gray-100 text-gray-700 rounded flex items-center text-sm hover:bg-gray-200"
+                      onClick={() => {
+                        const newModules = [...modules];
+                        newModules[moduleIndex].lessons.push({
+                          title: `Lesson ${module.lessons.length + 1}`,
+                          contentType: 'ARTICLE',
+                          text: '',
+                          order: module.lessons.length + 1,
+                          assignments: [],
+                          quizzes: []
+                        });
+                        setModules(newModules);
+                      }}
+                    >
+                      <Plus size={16} className="mr-1" /> Add Lesson
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                className="px-4 py-2 bg-red-50 text-red-700 rounded-lg flex items-center hover:bg-red-100"
+                onClick={() => {
+                  setModules([...modules, {
+                    title: `Module ${modules.length + 1}`,
+                    order: modules.length + 1,
+                    lessons: [{
+                      title: 'New Lesson',
+                      contentType: 'ARTICLE',
+                      text: '',
+                      order: 1,
+                      assignments: [],
+                      quizzes: []
+                    }]
+                  }]);
+                }}
+              >
+                <Plus size={20} className="mr-2" /> Add Module
+              </button>
             </div>
           </div>
 
