@@ -134,7 +134,9 @@ export const createLesson = async (req, res)=>{
                         include: {
                             lessons: true,
                         },
-                    }
+                    },
+                    // Include enrollments to get count
+                    enrollments: true
                 },
             });
             res.json(courses);
@@ -161,6 +163,8 @@ export const createLesson = async (req, res)=>{
                             lessons: true,
                         },
                     },
+                    // Include enrollments to get count
+                    enrollments: true,
                 },
             });
 
