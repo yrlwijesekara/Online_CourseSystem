@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock, BookOpen, User, Play, CheckCircle, ArrowLeft } from 'lucide-react';
+import { X, Clock, BookOpen, User, Play, CheckCircle, ArrowLeft, AlertTriangle } from 'lucide-react';
 import Navbar from '../components/NavBar';
 import Footer from '../components/Footer';
 
@@ -9,10 +9,12 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
   const [error, setError] = useState('');
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [toast, setToast] = useState(null); // { message, type } for notifications
 
   useEffect(() => {
     if (courseId) {
       fetchCourseDetails();
+      checkEnrollmentStatus();
     }
   }, [courseId]);
 
@@ -36,14 +38,56 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
       const courseData = await response.json();
       setCourse(courseData);
       
-      // Check if user is enrolled (you can add this logic later)
-      // setIsEnrolled(checkEnrollmentStatus(courseData.id));
-      
     } catch (error) {
       console.error('Error fetching course details:', error);
       setError(error.message);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const checkEnrollmentStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        // User is not logged in, so they are not enrolled
+        setIsEnrolled(false);
+        return;
+      }
+      
+      // Fetch user's enrollments
+      const response = await fetch('http://localhost:3001/api/enrollment/my', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        // If the status is 401, the user is likely not logged in
+        if (response.status === 401) {
+          console.log('User not authenticated for enrollment check');
+          setIsEnrolled(false);
+          return;
+        }
+        
+        // For other errors
+        throw new Error(`Failed to fetch enrollment status: ${response.status} ${response.statusText}`);
+      }
+      
+      const enrollments = await response.json();
+      
+      // Check if user is enrolled in this course
+      const isUserEnrolled = enrollments.some(
+        enrollment => enrollment.courseId === Number(courseId)
+      );
+      
+      setIsEnrolled(isUserEnrolled);
+      console.log('Enrollment status:', isUserEnrolled ? 'Enrolled' : 'Not enrolled');
+      
+    } catch (error) {
+      console.error('Error checking enrollment status:', error);
+      // If there's an error, assume user is not enrolled
+      setIsEnrolled(false);
     }
   };
 
@@ -56,12 +100,57 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
         return;
       }
 
-      // Add enrollment logic here
+      // Enroll user in the course
       console.log('Enrolling in course:', courseId);
+      
+      const response = await fetch(`http://localhost:3001/api/enrollment/${courseId}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        // Try to get the error message as JSON
+        let errorMessage = 'Failed to enroll in course';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (jsonError) {
+          // If response is not JSON, get the status text
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const enrollmentData = await response.json();
+      console.log('Enrollment successful:', enrollmentData);
+      
       // After successful enrollment:
       setIsEnrolled(true);
+      
+      // Show success message
+      setToast({
+        message: 'You have successfully enrolled in this course!',
+        type: 'success'
+      });
+      
+      // Auto-hide toast after 5 seconds
+      setTimeout(() => {
+        setToast(null);
+      }, 5000);
     } catch (error) {
       console.error('Error enrolling in course:', error);
+      setToast({
+        message: `Enrollment failed: ${error.message}`,
+        type: 'error'
+      });
+      
+      // Auto-hide toast after 5 seconds
+      setTimeout(() => {
+        setToast(null);
+      }, 5000);
     }
   };
 
@@ -116,7 +205,32 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
     <div className="min-h-screen bg-white">
       <Navbar navigateTo={navigateTo} />
       
-      
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-24 right-4 z-50 max-w-md p-4 rounded-lg shadow-lg flex items-center ${
+          toast.type === 'success' ? 'bg-green-100 border-l-4 border-green-500' : 
+          'bg-red-100 border-l-4 border-red-500'
+        }`}>
+          {toast.type === 'success' ? (
+            <CheckCircle className="h-6 w-6 text-green-500 mr-3" />
+          ) : (
+            <AlertTriangle className="h-6 w-6 text-red-500 mr-3" />
+          )}
+          <div className="flex-1">
+            <p className={`text-sm font-medium ${
+              toast.type === 'success' ? 'text-green-800' : 'text-red-800'
+            }`}>
+              {toast.message}
+            </p>
+          </div>
+          <button 
+            onClick={() => setToast(null)} 
+            className="ml-4 text-gray-400 hover:text-gray-500"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
 
       {/* Course Header */}
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -307,10 +421,19 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                     Enroll Now
                   </button>
                 ) : (
-                  <button className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold mb-4 flex items-center justify-center">
-                    <CheckCircle size={20} className="mr-2" />
-                    Enrolled
-                  </button>
+                  <div className="space-y-4">
+                    <div className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-semibold flex items-center justify-center">
+                      <CheckCircle size={18} className="mr-2" />
+                      Enrolled
+                    </div>
+                    <button 
+                      onClick={() => navigateTo('course-content', { courseId })}
+                      className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center"
+                    >
+                      <Play size={18} className="mr-2" />
+                      Start Learning
+                    </button>
+                  </div>
                 )}
 
                 <div className="space-y-3 text-sm">
