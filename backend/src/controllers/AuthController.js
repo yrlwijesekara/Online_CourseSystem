@@ -1,6 +1,6 @@
-const {PrismaClient} = require('@prisma/client');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+import {PrismaClient} from '@prisma/client';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
@@ -67,7 +67,7 @@ class AuthController {
             }
 
             const token = jwt.sign(
-                {userId: user.id},
+                {userId: user.id, role: user.role},
                 process.env.JWT_SECRET || 'default-secret',
                 {expiresIn: '24h'}
             );
@@ -104,4 +104,4 @@ class AuthController {
     }
 }
 
-module.exports = new AuthController();
+export default new AuthController();
