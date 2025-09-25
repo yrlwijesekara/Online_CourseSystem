@@ -59,6 +59,14 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   const fetchCourseData = async () => {
     try {
       const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      
+      console.log('Auth check - Token exists:', !!token, 'User exists:', !!user);
+      if (user) {
+        const userData = JSON.parse(user);
+        console.log('User role:', userData.role, 'User ID:', userData.id);
+      }
+      
       if (!token) {
         throw new Error('Authentication token not found');
       }
@@ -74,10 +82,13 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch course data');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Fetch failed with status:', response.status, 'Error:', errorData);
+        throw new Error(errorData.error || `Failed to fetch course data (${response.status})`);
       }
 
       const course = await response.json();
+      console.log('Fetched course data:', course);
       
       // Populate form with existing data
       setFormData({
@@ -148,8 +159,9 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update course');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Update failed with status:', response.status, 'Error:', errorData);
+        throw new Error(errorData.error || `Failed to update course (${response.status})`);
       }
 
       const updatedCourse = await response.json();
