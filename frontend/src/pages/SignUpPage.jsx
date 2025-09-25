@@ -10,8 +10,9 @@ const SignUpPage = ({ navigateTo }) => {
   const [error, setError] = useState('');
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     
     // Simple validation
     if (!firstName || !lastName || !email || !password) {
@@ -29,11 +30,38 @@ const SignUpPage = ({ navigateTo }) => {
       return;
     }
     
-    // In a real app, you would register with a server here
-    console.log('Registering with:', { firstName, lastName, email, password, rememberMe });
-    
-    // Navigate to home page after successful registration
-    navigateTo('home');
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: `${firstName} ${lastName}`,
+          email,
+          password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Store the token and user data in localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      console.log('Registration successful:', data.user);
+      
+      // Navigate to home page after successful registration
+      navigateTo('home');
+
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError(error.message || 'An error occurred during registration. Please try again.');
+    }
   };
   return (
     <div className="flex min-h-screen items-center justify-center p-4 sm:p-6 md:p-10 bg-gradient-to-r from-cyan-100 to-pink-100" style={{background: 'linear-gradient(to right, #d6f1f6, #f6d6f3)'}}>

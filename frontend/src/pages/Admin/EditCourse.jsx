@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export default function AddNewCourse({ onClose, onCourseAdded }) {
+export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -17,17 +17,15 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
   
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [contentFile, setContentFile] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-  
+
+  // Fetch course data when component mounts
+  useEffect(() => {
+    fetchCourseData();
+  }, [courseId]);
+
   const handleThumbnailDrop = (e) => {
     e.preventDefault();
     const files = e.dataTransfer.files;
@@ -47,16 +45,64 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
   const handleDragOver = (e) => {
     e.preventDefault();
   };
-  
+
   const handleFileInputChange = (e, type) => {
-    const files = e.target.files;
-    if (files.length > 0) {
+    const file = e.target.files[0];
+    if (file) {
       if (type === 'thumbnail') {
-        setThumbnailFile(files[0]);
-      } else {
-        setContentFile(files[0]);
+        setThumbnailFile(file);
+      } else if (type === 'content') {
+        setContentFile(file);
       }
     }
+  };
+
+  const fetchCourseData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch course data');
+      }
+
+      const course = await response.json();
+      
+      // Populate form with existing data
+      setFormData({
+        title: course.title || '',
+        category: course.category || '',
+        description: course.description || '',
+        fullDescription: course.fullDescription || '',
+        difficulty: course.difficulty || 'BEGINNER',
+        estimatedDuration: course.estimatedDuration || '',
+        prerequisites: course.prerequisites || '',
+        learningOutcomes: course.learningOutcomes || '',
+        language: course.language || 'English',
+        level: course.level || 'BEGINNER',
+      });
+    } catch (error) {
+      console.error('Error fetching course:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
   
   const handleSubmit = async (e) => {
@@ -71,60 +117,80 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
         throw new Error('Authentication token not found. Please login again.');
       }
 
-      // Prepare course data for API
-      const courseData = {
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        fullDescription: formData.fullDescription,
-        difficulty: formData.difficulty,
-        estimatedDuration: formData.estimatedDuration,
-        prerequisites: formData.prerequisites,
-        learningOutcomes: formData.learningOutcomes,
-        language: formData.language,
-        coverImageUrl: thumbnailFile ? URL.createObjectURL(thumbnailFile) : null, // In production, upload to cloud storage first
-        isPublished: false, // Set as pending by default, requires admin approval
-        // For now, we'll create a basic structure without modules
-        modules: []
-      };
+      // Create FormData to handle file uploads
+      const formDataToSend = new FormData();
+      
+      // Add all form fields
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('fullDescription', formData.fullDescription);
+      formDataToSend.append('difficulty', formData.difficulty);
+      formDataToSend.append('estimatedDuration', formData.estimatedDuration);
+      formDataToSend.append('prerequisites', formData.prerequisites);
+      formDataToSend.append('learningOutcomes', formData.learningOutcomes);
+      formDataToSend.append('language', formData.language);
+      formDataToSend.append('level', formData.level);
+      
+      // Add thumbnail file if selected
+      if (thumbnailFile) {
+        formDataToSend.append('thumbnail', thumbnailFile);
+      }
+      
+      // Add content file if selected
+      if (contentFile) {
+        formDataToSend.append('content', contentFile);
+      }
 
-      const response = await fetch('http://localhost:3001/api/courses', {
-        method: 'POST',
+      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+        method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(courseData)
+        body: formDataToSend
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create course');
+        throw new Error(errorData.error || 'Failed to update course');
       }
 
-      const newCourse = await response.json();
-      console.log('Course created successfully:', newCourse);
+      const updatedCourse = await response.json();
+      console.log('Course updated successfully:', updatedCourse);
       
       // Call the callback to refresh the course list
-      if (onCourseAdded) {
-        onCourseAdded(newCourse);
+      if (onCourseUpdated) {
+        onCourseUpdated(updatedCourse);
       }
       
       onClose();
     } catch (error) {
-      console.error('Error creating course:', error);
-      setError(error.message || 'Failed to create course. Please try again.');
+      console.error('Error updating course:', error);
+      setError(error.message || 'Failed to update course. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+            <p className="mt-2 text-gray-600">Loading course data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-screen flex flex-col">
         {/* Fixed Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-white rounded-t-lg">
-          <h2 className="text-2xl font-bold text-gray-900">Add New Course</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Edit Course</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 transition-colors"
@@ -391,34 +457,33 @@ export default function AddNewCourse({ onClose, onCourseAdded }) {
             </div>
           </div>
         </form>
-      </div>
+        </div>
 
-      {/* Fixed Footer */}
-      <div className="flex justify-end space-x-4 p-6 border-t border-gray-200 bg-white rounded-b-lg">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-        >
-          {isSubmitting ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Creating...
-            </>
-          ) : (
-            'Create Course'
-          )}
-        </button>
+        {/* Fixed Footer */}
+        <div className="flex justify-end space-x-4 p-6 border-t border-gray-200 bg-white rounded-b-lg">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Updating...
+              </>
+            ) : (
+              'Update Course'
+            )}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }

@@ -46,7 +46,12 @@ export const login = async (req, res) => {
             {expiresIn: '24h'}
         );
 
-        res.json({token});
+        // Return both token and user data (without password)
+        const {password: _, ...userWithoutPassword} = user;
+        res.json({
+            token,
+            user: userWithoutPassword
+        });
     } catch (error) {
         res.status(400).json({error: 'Login failed'});
     }
