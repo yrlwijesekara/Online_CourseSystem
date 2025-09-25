@@ -10,6 +10,11 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [toast, setToast] = useState(null); // { message, type } for notifications
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [assignmentSubmission, setAssignmentSubmission] = useState({ text: '', file: null });
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (courseId) {
@@ -17,6 +22,19 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
       checkEnrollmentStatus();
     }
   }, [courseId]);
+  
+  // Reset forms when modals are closed
+  useEffect(() => {
+    if (!selectedAssignment) {
+      setAssignmentSubmission({ text: '', file: null });
+    }
+  }, [selectedAssignment]);
+  
+  useEffect(() => {
+    if (!selectedQuiz) {
+      setQuizAnswers({});
+    }
+  }, [selectedQuiz]);
 
   const fetchCourseDetails = async () => {
     try {
@@ -46,6 +64,141 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
     }
   };
   
+  // Handle assignment submission
+  const handleAssignmentSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('You must be logged in to submit assignments');
+      }
+      
+      if (!assignmentSubmission.text && !assignmentSubmission.file) {
+        throw new Error('Please provide either text or a file submission');
+      }
+      
+      const formData = new FormData();
+      formData.append('text', assignmentSubmission.text);
+      if (assignmentSubmission.file) {
+        formData.append('file', assignmentSubmission.file);
+      }
+      
+      const response = await fetch(`http://localhost:3001/api/assignment/${selectedAssignment.id}/submit`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit assignment');
+      }
+      
+      setToast({
+        message: 'Assignment submitted successfully!',
+        type: 'success'
+      });
+      
+      // Reset form and close modal
+      setAssignmentSubmission({ text: '', file: null });
+      setSelectedAssignment(null);
+      
+    } catch (error) {
+      console.error('Error submitting assignment:', error);
+      setToast({
+        message: error.message || 'Failed to submit assignment',
+        type: 'error'
+      });
+    } finally {
+      setSubmitting(false);
+      
+      // Auto-hide toast after 5 seconds
+      setTimeout(() => {
+        setToast(null);
+      }, 5000);
+    }
+  };
+  
+  // Handle quiz submission
+  const handleQuizSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('You must be logged in to submit quizzes');
+      }
+      
+      // Validate that all questions have answers
+      const questionsCount = selectedQuiz.questions?.length || 0;
+      const answersCount = Object.keys(quizAnswers).length;
+      
+      if (answersCount < questionsCount) {
+        throw new Error('Please answer all questions before submitting');
+      }
+      
+      const response = await fetch(`http://localhost:3001/api/quiz/${selectedQuiz.id}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ answers: quizAnswers })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit quiz');
+      }
+      
+      const result = await response.json();
+      
+      setToast({
+        message: `Quiz submitted successfully! You scored ${result.score}/${result.total}.`,
+        type: 'success'
+      });
+      
+      // Reset and close modal
+      setQuizAnswers({});
+      setSelectedQuiz(null);
+      
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+      setToast({
+        message: error.message || 'Failed to submit quiz',
+        type: 'error'
+      });
+    } finally {
+      setSubmitting(false);
+      
+      // Auto-hide toast after 5 seconds
+      setTimeout(() => {
+        setToast(null);
+      }, 5000);
+    }
+  };
+  
+  // Handle answer changes in quiz
+  const handleQuizAnswerChange = (questionId, value, type) => {
+    if (type === 'MCQ') {
+      setQuizAnswers({ ...quizAnswers, [questionId]: value });
+    } else if (type === 'MULTISELECT') {
+      const currentAnswers = quizAnswers[questionId] || [];
+      const newAnswers = currentAnswers.includes(value)
+        ? currentAnswers.filter(answer => answer !== value)
+        : [...currentAnswers, value];
+        
+      setQuizAnswers({ ...quizAnswers, [questionId]: newAnswers });
+    } else { // TEXT
+      setQuizAnswers({ ...quizAnswers, [questionId]: value });
+    }
+  };
+
   const checkEnrollmentStatus = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -295,7 +448,7 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
             {/* Tabs */}
             <div className="border-b border-gray-200 mb-6">
               <nav className="flex space-x-8">
-                {['overview', 'curriculum', 'instructor'].map((tab) => (
+                {['overview', 'curriculum', 'instructor', 'assignments'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -397,6 +550,121 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                   </div>
                 </div>
               )}
+              
+              {activeTab === 'assignments' && (
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">Assignments and Quizzes</h3>
+                  
+                  {course.modules && course.modules.length > 0 ? (
+                    <div className="space-y-6">
+                      {course.modules.map((module) => (
+                        <div key={module.id}>
+                          <h4 className="font-medium text-lg text-gray-800 mb-3">{module.title}</h4>
+                          
+                          {module.lessons && module.lessons.length > 0 ? (
+                            <div className="space-y-4">
+                              {module.lessons.map((lesson) => (
+                                <div key={lesson.id} className="border rounded-lg">
+                                  <div className="p-4 bg-gray-50 border-b">
+                                    <h5 className="font-medium text-gray-800">{lesson.title}</h5>
+                                  </div>
+                                  
+                                  {/* Assignments */}
+                                  {lesson.assignments && lesson.assignments.length > 0 ? (
+                                    <div className="p-4 border-b">
+                                      <h6 className="font-medium text-gray-700 mb-3">Assignments</h6>
+                                      <div className="space-y-3">
+                                        {lesson.assignments.map((assignment) => (
+                                          <div key={assignment.id} className="p-3 bg-white border rounded-md">
+                                            <div className="flex justify-between items-center">
+                                              <div className="flex items-center">
+                                                <div className="p-2 bg-blue-100 rounded-full mr-3">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                                  </svg>
+                                                </div>
+                                                <div>
+                                                  <h6 className="font-medium">{assignment.title}</h6>
+                                                  {assignment.dueDate && (
+                                                    <p className="text-sm text-gray-500">
+                                                      Due: {new Date(assignment.dueDate).toLocaleDateString()}
+                                                    </p>
+                                                  )}
+                                                </div>
+                                              </div>
+                                              <button 
+                                                onClick={() => setSelectedAssignment(assignment)}
+                                                className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                                              >
+                                                View
+                                              </button>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="p-4 border-b text-gray-500 text-sm">
+                                      No assignments available for this lesson.
+                                    </div>
+                                  )}
+                                  
+                                  {/* Quizzes */}
+                                  {lesson.quizzes && lesson.quizzes.length > 0 ? (
+                                    <div className="p-4">
+                                      <h6 className="font-medium text-gray-700 mb-3">Quizzes</h6>
+                                      <div className="space-y-3">
+                                        {lesson.quizzes.map((quiz) => (
+                                          <div key={quiz.id} className="p-3 bg-white border rounded-md">
+                                            <div className="flex justify-between items-center">
+                                              <div className="flex items-center">
+                                                <div className="p-2 bg-green-100 rounded-full mr-3">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                                                    <path d="M9 11l3 3L22 4"></path>
+                                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                                  </svg>
+                                                </div>
+                                                <div>
+                                                  <h6 className="font-medium">{quiz.title}</h6>
+                                                  <p className="text-sm text-gray-500">
+                                                    {quiz.questions?.length || 0} questions • {quiz.totalMarks} marks
+                                                  </p>
+                                                </div>
+                                              </div>
+                                              <button 
+                                                onClick={() => setSelectedQuiz(quiz)}
+                                                className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                                              >
+                                                Take Quiz
+                                              </button>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="p-4 text-gray-500 text-sm">
+                                      No quizzes available for this lesson.
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-gray-500">No lessons available in this module.</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-600">No assignments or quizzes available for this course yet.</p>
+                  )}
+                </div>
+              )}
 
 
             </div>
@@ -460,6 +728,224 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
         </div>
       </div>
 
+      <Footer />
+
+      {/* Assignment Modal */}
+      {selectedAssignment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-bold text-gray-800">{selectedAssignment.title}</h3>
+                <button 
+                  onClick={() => setSelectedAssignment(null)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              {selectedAssignment.dueDate && (
+                <p className="text-sm font-medium text-gray-600 mb-2">
+                  Due: {new Date(selectedAssignment.dueDate).toLocaleDateString()} {new Date(selectedAssignment.dueDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </p>
+              )}
+            </div>
+            <div className="p-6">
+              <div className="prose max-w-none">
+                <h4 className="font-medium text-gray-800 mb-3">Instructions</h4>
+                <p className="text-gray-600 whitespace-pre-line mb-6">{selectedAssignment.description}</p>
+                
+                {selectedAssignment.contents && (
+                  <div className="bg-gray-50 border rounded-md p-4">
+                    <h5 className="font-medium text-gray-800 mb-2">Additional Resources</h5>
+                    <pre className="text-sm text-gray-600 overflow-auto">
+                      {typeof selectedAssignment.contents === 'string' 
+                        ? selectedAssignment.contents 
+                        : JSON.stringify(selectedAssignment.contents, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+              
+              {isEnrolled && (
+                <div className="mt-8 border-t pt-6">
+                  <h4 className="font-medium text-gray-800 mb-3">Submit Your Assignment</h4>
+                  <form onSubmit={handleAssignmentSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Your Answer
+                      </label>
+                      <textarea
+                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                        rows={5}
+                        placeholder="Type your answer here..."
+                        value={assignmentSubmission.text}
+                        onChange={(e) => setAssignmentSubmission({ ...assignmentSubmission, text: e.target.value })}
+                      ></textarea>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Upload File (optional)
+                      </label>
+                      <input 
+                        type="file" 
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        onChange={(e) => setAssignmentSubmission({ 
+                          ...assignmentSubmission, 
+                          file: e.target.files[0] 
+                        })}
+                      />
+                    </div>
+                    <button 
+                      type="submit"
+                      disabled={submitting}
+                      className={`flex items-center justify-center ${
+                        submitting ? 'bg-red-400' : 'bg-red-600 hover:bg-red-700'
+                      } text-white px-4 py-2 rounded-md transition-colors`}
+                    >
+                      {submitting ? (
+                        <>
+                          <span className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          Submitting...
+                        </>
+                      ) : 'Submit Assignment'}
+                    </button>
+                  </form>
+                </div>
+              )}
+              
+              {!isEnrolled && (
+                <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-yellow-700">
+                    You need to enroll in this course to submit assignments.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quiz Modal */}
+      {selectedQuiz && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-2xl font-bold text-gray-800">{selectedQuiz.title}</h3>
+                <button 
+                  onClick={() => setSelectedQuiz(null)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="mr-4">{selectedQuiz.questions?.length || 0} Questions</span>
+                <span>{selectedQuiz.totalMarks || 0} Total Marks</span>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {!isEnrolled ? (
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-yellow-700">
+                    You need to enroll in this course to take quizzes.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-6">
+                    <h4 className="font-medium text-gray-800 mb-3">Quiz Instructions</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-gray-600 text-sm">
+                      <li>Read each question carefully before answering.</li>
+                      <li>Once you submit the quiz, you cannot change your answers.</li>
+                      <li>For multiple-choice questions, select the best answer.</li>
+                      <li>Complete all questions to get your final score.</li>
+                    </ul>
+                  </div>
+                  
+                  <form onSubmit={handleQuizSubmit} className="space-y-8">
+                    {selectedQuiz.questions?.map((question, index) => (
+                      <div key={question.id} className="border rounded-md p-4">
+                        <h5 className="font-medium text-gray-800 mb-2">
+                          Question {index + 1}: {question.text}
+                        </h5>
+                        <p className="text-sm text-gray-500 mb-3">{question.marks} mark{question.marks > 1 ? 's' : ''}</p>
+                        
+                        {question.type === 'MCQ' && (
+                          <div className="space-y-2">
+                            {JSON.parse(question.options || '[]').map((option, optIndex) => (
+                              <div key={optIndex} className="flex items-center">
+                                <input 
+                                  type="radio" 
+                                  name={`question_${question.id}`} 
+                                  id={`q${question.id}_opt${optIndex}`}
+                                  className="mr-2"
+                                  checked={quizAnswers[question.id] === option}
+                                  onChange={() => handleQuizAnswerChange(question.id, option, 'MCQ')}
+                                  required
+                                />
+                                <label htmlFor={`q${question.id}_opt${optIndex}`}>{option}</label>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {question.type === 'MULTISELECT' && (
+                          <div className="space-y-2">
+                            {JSON.parse(question.options || '[]').map((option, optIndex) => (
+                              <div key={optIndex} className="flex items-center">
+                                <input 
+                                  type="checkbox" 
+                                  name={`question_${question.id}`} 
+                                  id={`q${question.id}_opt${optIndex}`}
+                                  className="mr-2"
+                                  checked={(quizAnswers[question.id] || []).includes(option)}
+                                  onChange={() => handleQuizAnswerChange(question.id, option, 'MULTISELECT')}
+                                />
+                                <label htmlFor={`q${question.id}_opt${optIndex}`}>{option}</label>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {question.type === 'TEXT' && (
+                          <textarea
+                            name={`question_${question.id}`}
+                            rows={3}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="Type your answer here..."
+                            value={quizAnswers[question.id] || ''}
+                            onChange={(e) => handleQuizAnswerChange(question.id, e.target.value, 'TEXT')}
+                            required
+                          ></textarea>
+                        )}
+                      </div>
+                    ))}
+                    
+                    <button 
+                      type="submit"
+                      disabled={submitting}
+                      className={`flex items-center justify-center ${
+                        submitting ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'
+                      } text-white px-6 py-2 rounded-md transition-colors`}
+                    >
+                      {submitting ? (
+                        <>
+                          <span className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          Submitting...
+                        </>
+                      ) : 'Submit Quiz'}
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
       <Footer />
     </div>
   );
