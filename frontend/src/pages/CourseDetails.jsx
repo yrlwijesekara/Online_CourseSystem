@@ -209,17 +209,24 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                     
                     <h4 className="font-semibold mb-2">What you'll learn:</h4>
                     <ul className="list-disc pl-6 space-y-2 text-gray-600">
-                      <li>Master the fundamentals of web development</li>
-                      <li>Build responsive and interactive websites</li>
-                      <li>Understand modern development practices</li>
-                      <li>Create portfolio-ready projects</li>
+                      {course.learningOutcomes ? (
+                        course.learningOutcomes.split('\n').map((outcome, index) => (
+                          <li key={index}>{outcome.trim()}</li>
+                        ))
+                      ) : (
+                        <li>No learning outcomes specified for this course</li>
+                      )}
                     </ul>
 
                     <h4 className="font-semibold mb-2 mt-6">Prerequisites:</h4>
                     <ul className="list-disc pl-6 space-y-2 text-gray-600">
-                      <li>Basic computer skills</li>
-                      <li>No prior programming experience required</li>
-                      <li>Eagerness to learn and practice</li>
+                      {course.prerequisites ? (
+                        course.prerequisites.split('\n').map((prerequisite, index) => (
+                          <li key={index}>{prerequisite.trim()}</li>
+                        ))
+                      ) : (
+                        <li>No prerequisites specified for this course</li>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -317,7 +324,7 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Language:</span>
-                    <span className="font-medium">English</span>
+                    <span className="font-medium">{course.language || 'English'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Certificate:</span>
