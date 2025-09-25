@@ -42,11 +42,35 @@ const SignInPage = ({ navigateTo }) => {
 
       console.log('Login successful:', data.user);
 
-      // Navigate based on user role
-      if (data.user.role === 'ADMIN') {
-        navigateTo('admin');
+      // Check if there's a redirect destination after login
+      const redirectPage = localStorage.getItem('redirectAfterLogin');
+      const redirectParams = localStorage.getItem('redirectParams');
+      
+      if (redirectPage) {
+        // Clear the redirect info
+        localStorage.removeItem('redirectAfterLogin');
+        
+        // Handle any params needed for the redirect
+        let params = {};
+        if (redirectParams) {
+          try {
+            params = JSON.parse(redirectParams);
+            localStorage.removeItem('redirectParams');
+          } catch (e) {
+            console.error('Error parsing redirect params:', e);
+          }
+        }
+        
+        // Navigate to the stored redirect page
+        console.log(`Redirecting to ${redirectPage} after login`);
+        navigateTo(redirectPage, params);
       } else {
-        navigateTo('home');
+        // No redirect found, navigate based on user role
+        if (data.user.role === 'ADMIN') {
+          navigateTo('admin');
+        } else {
+          navigateTo('home');
+        }
       }
 
     } catch (error) {
