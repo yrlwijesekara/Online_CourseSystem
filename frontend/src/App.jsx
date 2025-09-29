@@ -9,6 +9,11 @@ import AboutUs from './pages/AboutUs';
 import Admin from './pages/Admin/admin';
 import AdminCourses from './pages/Admin/AdminCourses';
 
+import UserProfile from './pages/ProfilePage.jsx';
+
+import AdminInstructors from './pages/Admin/AdminInstructors';
+
+
 
 function App() {
   // Use state to manage which page is displayed
@@ -154,6 +159,23 @@ function App() {
   }
 
   // Fallback to signin if currentPage is null
+
+  const pageToRender = currentPage ?? 'signin';
+    console.log("Rendering page:", currentPage);
+
+  return (
+    <>
+    {pageToRender === 'course' && <CoursePage navigateTo={navigateTo} />}
+    {pageToRender === 'signin' && <SignInPage navigateTo={navigateTo} />}
+    {pageToRender === 'signup' && <SignUpPage navigateTo={navigateTo} />}
+    {pageToRender === 'home' && <HomePage navigateTo={navigateTo} />}
+    {pageToRender === 'contact' && <ContactUs navigateTo={navigateTo} />}
+    {pageToRender === 'about' && <AboutUs navigateTo={navigateTo} />}
+    {pageToRender === 'admin' && <Admin navigateTo={navigateTo} />}
+    {pageToRender === 'admin-courses' && <AdminCourses navigateTo={navigateTo} />}
+        {pageToRender === 'user-profile' && <UserProfile navigateTo={navigateTo} />}
+    </>
+
   const pageToRender = currentPage || 'signin';
   console.log('Rendering page:', pageToRender, 'currentPage:', currentPage, 'isLoading:', isLoading);
 
@@ -199,6 +221,8 @@ function App() {
         return <Admin navigateTo={navigateTo} />;
       case 'admin-courses':
         return <AdminCourses navigateTo={navigateTo} />;
+      case 'admin-instructors':
+        return <AdminInstructors navigateTo={navigateTo} />;
       default:
         return <SignInPage navigateTo={navigateTo} />;
     }

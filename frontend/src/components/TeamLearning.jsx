@@ -1,7 +1,9 @@
 import { ArrowUpRight } from "lucide-react";
-import experienceImg from "../assets/aboutUs/image_lap.png"; // Using an existing image as fallback
 
-export default function TeamLearning() {
+import experienceImg from "../assets/aboutUs/image_lap.png"; // Using an existing image as a fallback
+
+
+export default function TeamLearning({navigateTo}) {
     return (
         <section className="w-full bg-white py-20">
             <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-12 items-center">
@@ -14,11 +16,12 @@ export default function TeamLearning() {
                         className="rounded-2xl shadow-lg w-full object-cover"
                     />
 
-                    {/* Floating Completion Card */}
+
                     <div className="absolute bottom-2 sm:bottom-4 md:bottom-6 left-2 sm:left-4 md:left-6 bg-white shadow-xl rounded-xl px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 scale-75 sm:scale-90 md:scale-100 transform origin-bottom-left">
                         <p className="text-xs sm:text-sm text-gray-600">Average Class Completion Rate</p>
                         <p className="text-green-600 text-xs mt-1">↑ 65+</p>
                         <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">95%</h3>
+
                     </div>
                 </div>
 
@@ -49,7 +52,15 @@ export default function TeamLearning() {
                     </div>
 
                     {/* CTA Button */}
-                    <button className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition">
+                    <button className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition"
+                            onClick={() => {
+                                navigateTo("course");
+                                //force scroll to top after navigation
+                                setTimeout(() => {
+                                    window.scrollTo({ top: 10, behavior: "smooth" });
+                                }, 0);
+                            }}
+                        >
                         Explore Courses
                         <span className="bg-white text-green-600 rounded-full p-1">
               <ArrowUpRight className="w-4 h-4" />
