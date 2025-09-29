@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../api";
+import AddNewCourse from "../pages/admin/AddNewCourse.jsx";
 import {
     Card, CardContent, CardHeader, CardTitle
 } from "./ProfileUI/card.jsx";
@@ -19,6 +20,7 @@ export function InstructorProfile() {
     const [loading, setLoading] = useState(true);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editForm, setEditForm] = useState({ name: "", bio: "", avatarUrl: "" });
+    const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
 
     // --- Fetch profile info ---
     useEffect(() => {
@@ -39,18 +41,18 @@ export function InstructorProfile() {
             .catch(err => console.error("Failed to fetch profile:", err));
     }, []);
 
-    // --- Fetch instructor courses separately ---
+    // --- Fetch instructor courses and students separately ---
     useEffect(() => {
-        api.get("/course/instructor/courses")
+        api.get("/enrollment/instructor/students")
             .then(res => {
-                const instructor = res.data.instructor;
+                const courses = res.data;
                 setUserData(prev => ({
                     ...prev,
-                    currentCoursesList: instructor.coursesList || [],
-                    currentCoursesCreated: instructor.coursesCreatedCount || 0
+                    currentCoursesList: courses,
+                    currentCoursesCreated: courses.length
                 }));
             })
-            .catch(err => console.error("Failed to fetch instructor courses:", err))
+            .catch(err => console.error("Failed to fetch instructor data:", err))
             .finally(() => setLoading(false));
     }, []);
 
@@ -86,6 +88,10 @@ export function InstructorProfile() {
 
     if (loading) return <div>Loading profile...</div>;
     if (!userData) return <div>Failed to load profile</div>;
+
+    const totalStudents = userData.currentCoursesList.reduce(
+      (sum, course) => sum + (course.studentsCount || 0), 0
+    );
 
     return (
         <div className="space-y-8">
@@ -186,7 +192,7 @@ export function InstructorProfile() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
                     { icon: <BookOpen className="w-5 h-5 text-indigo-600" />, label: "Courses Created", value: userData.currentCoursesCreated || 0 },
-                    { icon: <Users className="w-5 h-5 text-blue-600" />, label: "Students Learning", value: userData.studentsLearning || 0 },
+                    { icon: <Users className="w-5 h-5 text-blue-600" />, label: "Students Learning", value: totalStudents },
                     { icon: <DollarSign className="w-5 h-5 text-green-600" />, label: "Total Revenue", value: userData.totalRevenue || 0 },
                     { icon: <FileText className="w-5 h-5 text-orange-600" />, label: "Quizzes Created", value: userData.quizzesCreated || 0 },
                 ].map((stat, i) => (
@@ -210,7 +216,12 @@ export function InstructorProfile() {
                             <BookOpen className="w-5 h-5 text-indigo-600" />
                             Current Courses ({userData.currentCoursesCreated || 0})
                         </CardTitle>
-                        <Button size="sm" variant="outline" className="gap-2">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-2"
+                            onClick={() => setIsAddCourseOpen(true)}
+                        >
                             <PlusCircle className="w-4 h-4" /> Add Course
                         </Button>
                     </div>
@@ -223,7 +234,7 @@ export function InstructorProfile() {
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1">
                                             <h4 className="font-medium">{course.title}</h4>
-                                            <p className="text-sm text-muted-foreground">{course.students || 0} students enrolled</p>
+                                            <p className="text-sm text-muted-foreground">{course.studentsCount || 0} students enrolled</p>
                                         </div>
                                         <Badge variant={course.isPublished ? "default" : "secondary"} className="capitalize">
                                             {course.isPublished ? "Published" : "Draft"}
@@ -240,6 +251,34 @@ export function InstructorProfile() {
                                             <BarChart3 className="w-4 h-4" /> Analytics
                                         </Button>
                                     </div>
+
+                                    <div className="mt-3">
+                                        <h5 className="font-semibold text-sm mb-1">Enrolled Students</h5>
+                                        {course.students && course.students.length > 0 ? (
+                                            <ul className="list-disc list-inside text-sm text-gray-700">
+                                                {course.students.map(s => (
+                                                    <li key={s.id}>{s.name} ({s.email})</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-sm text-gray-500">No students enrolled yet.</p>
+                                        )}
+                                    </div>
+
+                                    <div className="mt-3">
+                                        <h5 className="font-semibold text-sm mb-1">Quizzes</h5>
+                                        {course.quizzes && course.quizzes.length > 0 ? (
+                                            <ul className="list-disc list-inside text-sm text-gray-700">
+                                                {course.quizzes.map(q => (
+                                                    <li key={q.id}>
+                                                        {q.title} – {q.submissions.length} submissions
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-sm text-gray-500">No quizzes yet.</p>
+                                        )}
+                                    </div>
                                 </div>
                             ))
                         ) : (
@@ -248,6 +287,19 @@ export function InstructorProfile() {
                     </div>
                 </CardContent>
             </Card>
+
+            {isAddCourseOpen && (
+                <AddNewCourse
+                  onClose={() => setIsAddCourseOpen(false)}
+                  onCourseAdded={(newCourse) => {
+                    setUserData(prev => ({
+                      ...prev,
+                      currentCoursesList: [...prev.currentCoursesList, newCourse],
+                      currentCoursesCreated: (prev.currentCoursesCreated || 0) + 1
+                    }));
+                  }}
+                />
+            )}
 
         </div>
     );
