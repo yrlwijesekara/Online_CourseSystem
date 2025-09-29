@@ -8,6 +8,7 @@ import ContactUs from './pages/ContactUs';
 import AboutUs from './pages/AboutUs';
 import Admin from './pages/Admin/admin';
 import AdminCourses from './pages/Admin/AdminCourses';
+import api from './api';
 
 import UserProfile from './pages/ProfilePage.jsx';
 
@@ -22,52 +23,26 @@ function App() {
   
   // Check authentication status on app initialization
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      console.log('Starting auth check...');
-      
-      try {
-        const token = localStorage.getItem('token');
-        const userString = localStorage.getItem('user');
-        console.log('Auth data found:', { hasToken: !!token, hasUser: !!userString });
-        
-        if (token && userString) {
-          const user = JSON.parse(userString);
-          
-          // Restore the previous page if available, otherwise use default
-          const savedPage = localStorage.getItem('currentPage');
-          
-          if (savedPage && savedPage !== 'signin' && savedPage !== 'signup') {
-            // Validate that the saved page is appropriate for the user role
-            if (user.role === 'ADMIN' && (savedPage === 'admin' || savedPage === 'admin-courses')) {
-              setCurrentPage(savedPage);
-            } else if (user.role !== 'ADMIN' && !savedPage.startsWith('admin')) {
-              setCurrentPage(savedPage);
-            } else {
-              // Default fallback based on role
-              setCurrentPage(user.role === 'ADMIN' ? 'admin' : 'home');
-            }
-          } else {
-            // No saved page or invalid saved page, use default
-            setCurrentPage(user.role === 'ADMIN' ? 'admin' : 'home');
+      const checkAuthStatus = async () => {
+          console.log("Starting auth check...");
+
+          try {
+              const res = await api.get("/auth/profile");
+              const user = res.data; // backend returns user
+              localStorage.setItem("user", JSON.stringify(user));
+
+              // Set the default page by role
+              setCurrentPage(user.role === "ADMIN" ? "admin" : "home");
+          } catch (error) {
+              console.error("Auth check failed:", error);
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              localStorage.removeItem("currentPage");
+              setCurrentPage("signin");
+          } finally {
+              setIsLoading(false);
           }
-        } else {
-          // No authentication data found, redirect to signin
-          console.log('No auth data found, redirecting to signin');
-          setCurrentPage('signin');
-        }
-      } catch (error) {
-        console.error('Error checking auth status:', error);
-        // Clear invalid data and redirect to signin
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('currentPage');
-        setCurrentPage('signin');
-      } finally {
-        // Always stop loading after auth check
-        console.log('Auth check completed, setting loading to false');
-        setIsLoading(false);
-      }
-    };
+      };
 
     // Small delay to prevent flash, then check authentication
     const timer = setTimeout(() => {
@@ -160,30 +135,30 @@ function App() {
 
   // Fallback to signin if currentPage is null
 
+  // const pageToRender = currentPage ?? 'signin';
+  //   console.log("Rendering page:", currentPage);
+  //
+  // return (
+  //   <>
+  //   {pageToRender === 'course' && <CoursePage navigateTo={navigateTo} />}
+  //   {pageToRender === 'signin' && <SignInPage navigateTo={navigateTo} />}
+  //   {pageToRender === 'signup' && <SignUpPage navigateTo={navigateTo} />}
+  //   {pageToRender === 'home' && <HomePage navigateTo={navigateTo} />}
+  //   {pageToRender === 'contact' && <ContactUs navigateTo={navigateTo} />}
+  //   {pageToRender === 'about' && <AboutUs navigateTo={navigateTo} />}
+  //   {pageToRender === 'admin' && <Admin navigateTo={navigateTo} />}
+  //   {pageToRender === 'admin-courses' && <AdminCourses navigateTo={navigateTo} />}
+  //       {pageToRender === 'user-profile' && <UserProfile navigateTo={navigateTo} />}
+  //   </>
+
   const pageToRender = currentPage ?? 'signin';
-    console.log("Rendering page:", currentPage);
-
-  return (
-    <>
-    {pageToRender === 'course' && <CoursePage navigateTo={navigateTo} />}
-    {pageToRender === 'signin' && <SignInPage navigateTo={navigateTo} />}
-    {pageToRender === 'signup' && <SignUpPage navigateTo={navigateTo} />}
-    {pageToRender === 'home' && <HomePage navigateTo={navigateTo} />}
-    {pageToRender === 'contact' && <ContactUs navigateTo={navigateTo} />}
-    {pageToRender === 'about' && <AboutUs navigateTo={navigateTo} />}
-    {pageToRender === 'admin' && <Admin navigateTo={navigateTo} />}
-    {pageToRender === 'admin-courses' && <AdminCourses navigateTo={navigateTo} />}
-        {pageToRender === 'user-profile' && <UserProfile navigateTo={navigateTo} />}
-    </>
-
-  const pageToRender = currentPage || 'signin';
   console.log('Rendering page:', pageToRender, 'currentPage:', currentPage, 'isLoading:', isLoading);
 
   // Check authentication status before rendering the page
   const renderPage = () => {
     // List of pages that require authentication
     const protectedPages = ['course', 'admin', 'admin-courses', 'course-content', 'profile', 'my-courses'];
-    
+
     // List of admin-only pages
     const adminOnlyPages = ['admin', 'admin-courses'];
 
@@ -223,6 +198,8 @@ function App() {
         return <AdminCourses navigateTo={navigateTo} />;
       case 'admin-instructors':
         return <AdminInstructors navigateTo={navigateTo} />;
+      case 'user-profile':
+            return <UserProfile navigateTo={navigateTo} />;
       default:
         return <SignInPage navigateTo={navigateTo} />;
     }
