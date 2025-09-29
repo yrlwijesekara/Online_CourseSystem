@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, BookOpen } from 'lucide-react';
+import AssignmentQuizManager from './AssignmentQuizManager';
 
 export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   const [formData, setFormData] = useState({
@@ -12,7 +13,6 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
     prerequisites: '',
     learningOutcomes: '',
     language: 'English',
-    level: 'BEGINNER',
   });
   
   const [thumbnailFile, setThumbnailFile] = useState(null);
@@ -20,6 +20,9 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [showAssignmentQuizManager, setShowAssignmentQuizManager] = useState(false);
+  const [courseModules, setCourseModules] = useState([]);
 
   // Fetch course data when component mounts
   useEffect(() => {
@@ -60,21 +63,36 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   const fetchCourseData = async () => {
     try {
       const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      
+      console.log('Auth check - Token exists:', !!token, 'User exists:', !!user);
+      if (user) {
+        const userData = JSON.parse(user);
+        console.log('User role:', userData.role, 'User ID:', userData.id);
+      }
+      
       if (!token) {
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+      // Ensure courseId is numeric
+      const numericCourseId = typeof courseId === 'string' ? courseId.replace('#', '') : courseId;
+      console.log('Fetching course data for ID:', numericCourseId);
+
+      const response = await fetch(`http://localhost:3001/api/courses/${numericCourseId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch course data');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Fetch failed with status:', response.status, 'Error:', errorData);
+        throw new Error(errorData.error || `Failed to fetch course data (${response.status})`);
       }
 
       const course = await response.json();
+      console.log('Fetched course data:', course);
       
       // Populate form with existing data
       setFormData({
@@ -87,8 +105,10 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
         prerequisites: course.prerequisites || '',
         learningOutcomes: course.learningOutcomes || '',
         language: course.language || 'English',
-        level: course.level || 'BEGINNER',
       });
+      
+      // Store the course modules for assignments and quizzes
+      setCourseModules(course.modules || []);
     } catch (error) {
       console.error('Error fetching course:', error);
       setError(error.message);
@@ -106,7 +126,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
   };
   
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setIsSubmitting(true);
     setError('');
     
@@ -117,50 +137,92 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
         throw new Error('Authentication token not found. Please login again.');
       }
 
-      // Create FormData to handle file uploads
-      const formDataToSend = new FormData();
-      
-      // Add all form fields
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('fullDescription', formData.fullDescription);
-      formDataToSend.append('difficulty', formData.difficulty);
-      formDataToSend.append('estimatedDuration', formData.estimatedDuration);
-      formDataToSend.append('prerequisites', formData.prerequisites);
-      formDataToSend.append('learningOutcomes', formData.learningOutcomes);
-      formDataToSend.append('language', formData.language);
-      formDataToSend.append('level', formData.level);
-      
-      // Add thumbnail file if selected
-      if (thumbnailFile) {
-        formDataToSend.append('thumbnail', thumbnailFile);
-      }
-      
-      // Add content file if selected
-      if (contentFile) {
-        formDataToSend.append('content', contentFile);
-      }
+      // Prepare course data for API
+      const courseData = {
+        title: formData.title,
+        category: formData.category,
+        description: formData.description,
+        fullDescription: formData.fullDescription,
+        difficulty: formData.difficulty,
+        estimatedDuration: formData.estimatedDuration,
+        prerequisites: formData.prerequisites,
+        learningOutcomes: formData.learningOutcomes,
+        language: formData.language,
+      };
 
-      const response = await fetch(`http://localhost:3001/api/courses/${courseId}`, {
+      console.log('Sending course update data:', courseData);
+
+      // Ensure courseId is numeric
+      const numericCourseId = typeof courseId === 'string' ? courseId.replace('#', '') : courseId;
+      console.log('Updating course ID:', numericCourseId);
+
+      // First, update the course data
+      const response = await fetch(`http://localhost:3001/api/courses/${numericCourseId}`, {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: formDataToSend
+        body: JSON.stringify(courseData)
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update course');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Update failed with status:', response.status, 'Error:', errorData);
+        throw new Error(errorData.error || `Failed to update course (${response.status})`);
       }
 
       const updatedCourse = await response.json();
       console.log('Course updated successfully:', updatedCourse);
       
+      // Handle file uploads if any files are selected
+      let fileUploadSuccess = true;
+      
+      if (thumbnailFile) {
+        const thumbnailFormData = new FormData();
+        thumbnailFormData.append('thumbnail', thumbnailFile);
+        
+        const thumbnailResponse = await fetch(`http://localhost:3001/api/courses/${numericCourseId}/thumbnail`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: thumbnailFormData
+        });
+        
+        if (!thumbnailResponse.ok) {
+          console.error('Thumbnail upload failed:', thumbnailResponse.status);
+          fileUploadSuccess = false;
+        }
+      }
+      
+      if (contentFile) {
+        const contentFormData = new FormData();
+        contentFormData.append('content', contentFile);
+        
+        const contentResponse = await fetch(`http://localhost:3001/api/courses/${numericCourseId}/content`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: contentFormData
+        });
+        
+        if (!contentResponse.ok) {
+          console.error('Content upload failed:', contentResponse.status);
+          fileUploadSuccess = false;
+        }
+      }
+      
       // Call the callback to refresh the course list
       if (onCourseUpdated) {
         onCourseUpdated(updatedCourse);
+      }
+      
+      if (!fileUploadSuccess) {
+        setError('Course data updated but there was an error uploading one or more files.');
+        setIsSubmitting(false);
+        return;
       }
       
       onClose();
@@ -201,7 +263,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="p-6 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-600">{error}</p>
@@ -382,6 +444,54 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
             </div>
           </div>
 
+          {/* Assignments & Quizzes Section */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Assignments & Quizzes</h3>
+            
+            {courseModules.length > 0 ? (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">Select a lesson to manage its assignments and quizzes:</p>
+                
+                {courseModules.map((module) => (
+                  <div key={module.id} className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 p-4 font-medium">{module.title}</div>
+                    
+                    {module.lessons && module.lessons.length > 0 ? (
+                      <div className="p-2">
+                        {module.lessons.map((lesson) => (
+                          <div key={lesson.id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-md">
+                            <div className="flex items-center">
+                              <BookOpen size={18} className="text-gray-500 mr-2" />
+                              <span>{lesson.title}</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                              onClick={() => {
+                                setSelectedLesson(lesson.id);
+                                setShowAssignmentQuizManager(true);
+                              }}
+                            >
+                              Manage
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-gray-500 text-sm">
+                        No lessons in this module yet. Add lessons first to create assignments and quizzes.
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-gray-500">
+                No modules or lessons found. Create course structure first to add assignments and quizzes.
+              </div>
+            )}
+          </div>
+            
           {/* File Upload Section */}
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Course Materials</h3>
@@ -456,7 +566,7 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
               </div>
             </div>
           </div>
-        </form>
+        </div>
         </div>
 
         {/* Fixed Footer */}
@@ -469,7 +579,8 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
             Cancel
           </button>
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={isSubmitting}
             className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
@@ -484,6 +595,19 @@ export default function EditCourse({ courseId, onClose, onCourseUpdated }) {
           </button>
         </div>
       </div>
+      
+      {/* Assignment/Quiz Manager Modal */}
+      {showAssignmentQuizManager && selectedLesson && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <AssignmentQuizManager 
+            lessonId={selectedLesson} 
+            onClose={() => {
+              setShowAssignmentQuizManager(false);
+              setSelectedLesson(null);
+            }} 
+          />
+        </div>
+      )}
     </div>
   );
 }

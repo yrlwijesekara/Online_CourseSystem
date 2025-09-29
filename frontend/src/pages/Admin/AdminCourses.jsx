@@ -38,7 +38,7 @@ export default function AdminCourses({ navigateTo }) {
                 title: course.title,
                 instructor: course.instructor?.name || 'Unknown Instructor',
                 category: course.category || 'General',
-                price: `$${(course.priceCents / 100).toFixed(2)}`,
+                price: 'Free', // Since we removed priceCents from schema
                 enrolled: course.enrollments?.length?.toString() || '0',
                 status: course.isPublished ? 'active' : 'draft'
             }));
@@ -135,7 +135,7 @@ export default function AdminCourses({ navigateTo }) {
             title: newCourse.title,
             instructor: newCourse.instructor?.name || 'Unknown Instructor',
             category: newCourse.category || 'General',
-            price: `$${(newCourse.priceCents / 100).toFixed(2)}`,
+            price: 'Free', // Since we removed priceCents from schema
             enrolled: '0',
             status: newCourse.isPublished ? 'active' : 'draft'
         };
@@ -151,20 +151,28 @@ export default function AdminCourses({ navigateTo }) {
 
     // Handle when a course is updated
     const handleCourseUpdated = (updatedCourse) => {
+        console.log('handleCourseUpdated called with:', updatedCourse);
+        
         // Update the course in the list
         const transformedCourse = {
             id: `#${updatedCourse.id}`,
             title: updatedCourse.title,
             instructor: updatedCourse.instructor?.name || 'Unknown Instructor',
             category: updatedCourse.category || 'General',
-            price: `$${(updatedCourse.priceCents / 100).toFixed(2)}`,
+            price: 'Free', // Since we removed priceCents from schema
             enrolled: updatedCourse.enrollments?.length?.toString() || '0',
             status: updatedCourse.isPublished ? 'active' : 'draft'
         };
         
-        setCourses(prev => prev.map(course => 
-            course.id === `#${updatedCourse.id}` ? transformedCourse : course
-        ));
+        console.log('Transformed course:', transformedCourse);
+        
+        setCourses(prev => {
+            const updated = prev.map(course => 
+                course.id === `#${updatedCourse.id}` ? transformedCourse : course
+            );
+            console.log('Updated courses list:', updated);
+            return updated;
+        });
     };
     
     // State for approval requests
@@ -197,7 +205,7 @@ export default function AdminCourses({ navigateTo }) {
                 title: course.title,
                 instructor: course.instructor?.name || 'Unknown Instructor',
                 category: course.category || 'General',
-                price: `$${(course.priceCents / 100).toFixed(2)}`,
+                price: 'Free', // Since we removed priceCents from schema
                 originalId: course.id // Keep the original ID for API calls
             }));
             

@@ -49,8 +49,8 @@ export const getAssignmentById = async (req, res) => {
 
 // Create a new assignment
 export const createAssignment = async (req, res) => {
-    if (req.user.role !== 'INSTRUCTOR') {
-        return res.status(403).json({error: 'Only instructors can create assignments'});
+    if (req.user.role !== 'INSTRUCTOR' && req.user.role !== 'ADMIN') {
+        return res.status(403).json({error: 'Only instructors and admins can create assignments'});
     }
     try {
         const {lessonId, title, description, dueDate, contents} = req.body;
@@ -71,8 +71,8 @@ export const createAssignment = async (req, res) => {
 
 // Update assignment
 export const updateAssignment = async (req, res) => {
-    if (req.user.role !== 'INSTRUCTOR') {
-        return res.status(403).json({error: 'Only instructors can update assignments'});
+    if (req.user.role !== 'INSTRUCTOR' && req.user.role !== 'ADMIN') {
+        return res.status(403).json({error: 'Only instructors and admins can update assignments'});
     }
     try {
         const {id} = req.params;
@@ -102,8 +102,8 @@ export const deleteAssignment = async (req, res) => {
         await prisma.assignment.delete({
             where: {id: parseInt(id)}
         });
-        res.json({message: 'Assignment deleted successfully'});
-        res.status(204).send();
+        // Send only one response - choose either a 200 with message or a 204 with no content
+        return res.status(200).json({message: 'Assignment deleted successfully'});
     } catch (error) {
         res.status(500).json({error: 'Failed to delete assignment'});
     }
