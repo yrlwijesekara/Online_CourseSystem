@@ -59,7 +59,7 @@ export const login = async (req, res) => {
 
 export const getProfile = async (req, res) => {
     try {
-        const userId = parseInt(req.userId);
+        const userId = req.user.id;
         const user = await prisma.user.findUnique({
             where: {id: userId},
             select: {
@@ -68,7 +68,12 @@ export const getProfile = async (req, res) => {
                 name: true,
                 bio: true,
                 avatarUrl: true,
-                role: true
+                role: true,
+                courses: { select: { id: true, title: true } },           // teaching courses
+                enrollments: { select: { id: true, course: { select: { id: true, title: true } }, progress: true } }, // enrolled courses
+                certificates: true,
+                QuizSubmission: true,
+                createdAt: true,
             }
         });
 
