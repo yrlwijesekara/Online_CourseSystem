@@ -2,7 +2,7 @@ import axios from "axios";
 import jwtDecode from "jwt-decode";
 
 const api = axios.create({
-    baseURL: "http://localhost:4000/api", // backend URL
+    baseURL: "http://localhost:3001/api", // backend URL
     withCredentials: true, // if backend uses cookies
 });
 
