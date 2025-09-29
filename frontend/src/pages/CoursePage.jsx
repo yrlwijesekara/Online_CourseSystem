@@ -69,7 +69,8 @@ const CoursePage = ({ navigateTo }) => {
         image: course.coverImageUrl || "/PopularCourses/p1.png", // Use cover image or default
         description: course.description,
         difficulty: course.difficulty,
-        instructor: course.instructor?.name || 'Unknown Instructor'
+        instructor: course.instructor?.name || 'Unknown Instructor',
+        enrollmentCount: course.enrollments?.length || 0 // Add enrollment count
       }));
       
       setAllCourses(transformedCourses);
@@ -363,6 +364,13 @@ const CoursePage = ({ navigateTo }) => {
                                               </svg>
                                               <span>{course.lectures} lectures</span>
                                           </div>
+                                      </div>
+                                      <div className="flex items-center text-sm text-gray-500 mb-4">
+                                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
+                                              <path d="M10 9C11.1046 9 12 8.10457 12 7C12 5.89543 11.1046 5 10 5C8.89543 5 8 5.89543 8 7C8 8.10457 8.89543 9 10 9Z" stroke="#4E5255" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                              <path d="M15.5 17.5C15.5 13.9101 13.0899 11 10 11C6.91015 11 4.5 13.9101 4.5 17.5" stroke="#4E5255" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          </svg>
+                                          <span>{course.enrollmentCount} enrolled</span>
                                       </div>
 
                                       <div className="flex justify-between items-center">
