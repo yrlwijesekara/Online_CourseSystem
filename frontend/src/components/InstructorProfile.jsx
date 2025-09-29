@@ -69,18 +69,20 @@ export function InstructorProfile() {
     const handleSaveProfile = () => {
         if (!userData) return;
 
+        // Prepare payload: only send fields that have values (we'll fix issue #2 here too)
         const payload = {
-            name: editForm.name.trim() !== "" ? editForm.name : userData.name,
-            bio: editForm.bio?.trim() !== "" ? editForm.bio : userData.bio,
-            avatarUrl: editForm.avatarUrl?.trim() !== "" ? editForm.avatarUrl : userData.avatarUrl,
+            name: editForm.name || userData.name,
+            bio: editForm.bio || userData.bio,
+            avatarUrl: editForm.avatarUrl || userData.avatarUrl,
         };
 
         api.put("/auth/profile", payload)
-            .then(res => {
+            .then((res) => {
+                // Merge updated data with existing userData
                 setUserData(prev => ({ ...prev, ...res.data }));
                 setIsEditDialogOpen(false);
             })
-            .catch(err => console.error("Failed to update profile:", err));
+            .catch((err) => console.error("Failed to update profile:", err));
     };
 
     const formatDate = (dateString) =>
