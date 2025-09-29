@@ -8,6 +8,7 @@ import ContactUs from './pages/ContactUs';
 import AboutUs from './pages/AboutUs';
 import Admin from './pages/Admin/admin';
 import AdminCourses from './pages/Admin/AdminCourses';
+import UserProfile from './pages/ProfilePage.jsx';
 
 
 function App() {
@@ -93,7 +94,8 @@ function App() {
   }
 
   // Fallback to signin if currentPage is null
-  const pageToRender = currentPage || 'signin';
+  const pageToRender = currentPage ?? 'signin';
+    console.log("Rendering page:", currentPage);
 
   return (
     <>
@@ -105,6 +107,7 @@ function App() {
     {pageToRender === 'about' && <AboutUs navigateTo={navigateTo} />}
     {pageToRender === 'admin' && <Admin navigateTo={navigateTo} />}
     {pageToRender === 'admin-courses' && <AdminCourses navigateTo={navigateTo} />}
+        {pageToRender === 'user-profile' && <UserProfile navigateTo={navigateTo} />}
     </>
   )
 } 
