@@ -89,7 +89,7 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const userId = parseInt(req.userId);
+        const userId = req.user.id;
         const {name, bio, avatarUrl} = req.body;
 
         const user = await prisma.user.update({
