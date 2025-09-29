@@ -81,6 +81,13 @@ const Navbar = ({ navigateTo, currentPage = "home" }) => {
           >
             Contact
           </li>
+
+            <li
+                className={`cursor-pointer ${currentPage === 'user-profile' ? 'font-bold text-black' : 'hover:text-black/70'}`}
+                onClick={() => navigateTo && navigateTo('user-profile')}
+            >
+                Profile
+            </li>
         </ul>
 
         {/* Right side buttons */}
