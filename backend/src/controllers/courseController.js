@@ -649,3 +649,53 @@ export const deleteCourse= async (req, res) => {
             res.status(500).json({error: 'Failed to reject course'});
         }
     }
+
+    export const getInstructorCourses = async (req, res) => {
+        try {
+            const instructorId = req.user.id; // assuming you have auth middleware setting req.user
+    
+            const instructor = await prisma.user.findUnique({
+                where: { id: instructorId },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatarUrl: true,
+                    bio: true,
+                    courses: {
+                        select: {
+                            id: true,
+                            title: true,
+                            slug: true,
+                            description: true,
+                            coverImageUrl: true,
+                            isPublished: true,
+                            createdAt: true,
+                        },
+                    },
+                },
+            });
+    
+            if (!instructor) {
+                return res.status(404).json({ error: "Instructor not found" });
+            }
+    
+            // Count of courses created
+            const coursesCreatedCount = instructor.courses.length;
+    
+            res.status(200).json({
+                instructor: {
+                    id: instructor.id,
+                    name: instructor.name,
+                    email: instructor.email,
+                    bio: instructor.bio,
+                    avatarUrl: instructor.avatarUrl,
+                    coursesCreatedCount,
+                    coursesList: instructor.courses,
+                },
+            });
+        } catch (error) {
+            console.error("Error fetching instructor courses:", error);
+            res.status(500).json({ error: "Failed to fetch instructor courses" });
+        }
+    };

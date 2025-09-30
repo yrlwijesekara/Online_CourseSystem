@@ -107,26 +107,75 @@ export const getStudentsForInstructor = async (req, res) => {
     try {
         const instructorId = req.user.id;
 
-
-
         const courses = await prisma.course.findMany({
             where: { instructorId },
             include: {
+                _count: {
+                    select: { enrollments: true },
+                },
                 enrollments: {
-                    include: { user: true },
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                },
+                modules: {
+                    include: {
+                        lessons: {
+                            include: {
+                                quizzes: {
+                                    include: {
+                                        submissions: {
+                                            include: {
+                                                user: {
+                                                    select: {
+                                                        id: true,
+                                                        name: true,
+                                                        email: true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
             },
         });
 
-        if (!courses) {
-            return res.status(404).json({
-                error: "No courses found",
-            })
-        }
+        const result = courses.map(course => ({
+            id: course.id,
+            title: course.title,
+            studentsCount: course._count.enrollments,
+            students: course.enrollments.map(e => e.user),
+            quizzes: course.modules.flatMap(m =>
+                m.lessons.flatMap(l =>
+                    l.quizzes.map(q => ({
+                        id: q.id,
+                        title: q.title,
+                        totalMarks: q.totalMarks,
+                        submissions: q.submissions.map(s => ({
+                            id: s.id,
+                            user: s.user,
+                            marksObtained: s.marksObtained,
+                            submittedAt: s.submittedAt,
+                        })),
+                    }))
+                )
+            ),
+        }));
 
-        res.status(200).json(courses);
+        res.status(200).json(result);
     } catch (error) {
-        console.error("Error fetching students for instructor:", error);
-        res.status(500).json({ error: "Failed to fetch enrolled students" });
+        console.error("Error fetching students + quizzes for instructor:", error);
+        res.status(500).json({ error: "Failed to fetch data" });
     }
 };

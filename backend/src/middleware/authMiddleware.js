@@ -22,6 +22,11 @@ export const authMiddleware = async (req, res, next) => {
         if (!user) {
             return res.status(401).json({ error: "User not found" });
         }
+        console.log("authMiddleware OK:", {
+            userId: user.id,
+            role: user.role,
+            headers: req.headers.authorization
+            });
 
         req.user = user; // 👈 now controllers can do req.user.id / req.user.role
         next();
