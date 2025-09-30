@@ -119,9 +119,18 @@ export const createLesson = async (req, res)=>{
             // Check if this is an admin request
             const isAdmin = req.user?.role === 'ADMIN';
             const showAll = req.query.all === 'true' && isAdmin;
-            
+
+            // Support ?limit=6&sort=createdAt_desc
+            let limit = parseInt(req.query.limit) || undefined;
+            let orderBy = undefined;
+            if (req.query.sort === 'createdAt_desc') {
+                orderBy = { createdAt: 'desc' };
+            } else if (req.query.sort === 'createdAt_asc') {
+                orderBy = { createdAt: 'asc' };
+            }
+
             const courses = await prisma.course.findMany({
-                where: showAll ? {} : { isPublished: true }, // Only published courses for non-admin
+                where: showAll ? {} : { isPublished: true },
                 include: {
                     instructor: {
                         select: {
@@ -144,9 +153,10 @@ export const createLesson = async (req, res)=>{
                             },
                         },
                     },
-                    // Include enrollments to get count
                     enrollments: true
                 },
+                ...(orderBy && { orderBy }),
+                ...(limit && { take: limit }),
             });
             res.json(courses);
         } catch (err) {
