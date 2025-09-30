@@ -3,6 +3,12 @@ import jwt from "jsonwebtoken";
 export const roleCheck = (...allowedRoles) => {
     return (req, res, next) => {
         try {
+
+            console.log("roleCheck middleware:", {
+              allowedRoles,
+              reqUserRole: req.user && req.user.role
+            });
+
             // Check if user is already attached from authMiddleware
             if (req.user && req.user.role) {
                 if (!allowedRoles.includes(req.user.role)) {
@@ -18,6 +24,7 @@ export const roleCheck = (...allowedRoles) => {
             }
 
             const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbacksecret");
+            console.log("roleCheck fallback decoded:", decoded);
             
             if (!decoded.role) {
                 return res.status(401).json({ message: "Token does not contain role information" });
