@@ -15,6 +15,7 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
   const [assignmentSubmission, setAssignmentSubmission] = useState({ text: '', file: null });
   const [quizAnswers, setQuizAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [showLearningContent, setShowLearningContent] = useState(false);
 
   useEffect(() => {
     if (courseId) {
@@ -356,6 +357,17 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Add custom styles for mobile responsiveness */}
+      <style jsx>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;  /* Internet Explorer 10+ */
+          scrollbar-width: none;  /* Firefox */
+        }
+        .scrollbar-hide::-webkit-scrollbar { 
+          display: none;  /* Safari and Chrome */
+        }
+      `}</style>
+      
       <Navbar navigateTo={navigateTo} />
       
       {/* Toast Notification */}
@@ -386,12 +398,12 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
       )}
 
       {/* Course Header */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Column - Course Info */}
           <div className="lg:col-span-2">
             {/* Course Image */}
-            <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6">
+            <div className="w-full h-48 sm:h-64 md:h-80 rounded-xl overflow-hidden mb-4 sm:mb-6">
               <img 
                 src={course.coverImageUrl || '/course/html.png'} 
                 alt={course.title}
@@ -447,7 +459,7 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
 
             {/* Tabs */}
             <div className="border-b border-gray-200 mb-6">
-              <nav className="flex space-x-8">
+              <nav className="flex space-x-8 overflow-x-auto scrollbar-hide whitespace-nowrap">
                 {['overview', 'curriculum', 'instructor', 'assignments'].map((tab) => (
                   <button
                     key={tab}
@@ -457,6 +469,7 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                         ? 'border-red-600 text-red-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
+                    style={{ minWidth: '110px' }}
                   >
                     {tab}
                   </button>
@@ -576,9 +589,9 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                                       <div className="space-y-3">
                                         {lesson.assignments.map((assignment) => (
                                           <div key={assignment.id} className="p-3 bg-white border rounded-md">
-                                            <div className="flex justify-between items-center">
-                                              <div className="flex items-center">
-                                                <div className="p-2 bg-blue-100 rounded-full mr-3">
+                                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                              <div className="flex items-start sm:items-center">
+                                                <div className="p-2 bg-blue-100 rounded-full mr-3 flex-shrink-0">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
                                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                                     <polyline points="14 2 14 8 20 8"></polyline>
@@ -587,10 +600,10 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                                                     <polyline points="10 9 9 9 8 9"></polyline>
                                                   </svg>
                                                 </div>
-                                                <div>
-                                                  <h6 className="font-medium">{assignment.title}</h6>
+                                                <div className="min-w-0 flex-1">
+                                                  <h6 className="font-medium text-sm sm:text-base">{assignment.title}</h6>
                                                   {assignment.dueDate && (
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                                                       Due: {new Date(assignment.dueDate).toLocaleDateString()}
                                                     </p>
                                                   )}
@@ -598,7 +611,7 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                                               </div>
                                               <button 
                                                 onClick={() => setSelectedAssignment(assignment)}
-                                                className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                                                className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors self-start sm:self-center flex-shrink-0"
                                               >
                                                 View
                                               </button>
@@ -620,24 +633,24 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                                       <div className="space-y-3">
                                         {lesson.quizzes.map((quiz) => (
                                           <div key={quiz.id} className="p-3 bg-white border rounded-md">
-                                            <div className="flex justify-between items-center">
-                                              <div className="flex items-center">
-                                                <div className="p-2 bg-green-100 rounded-full mr-3">
+                                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                              <div className="flex items-start sm:items-center">
+                                                <div className="p-2 bg-green-100 rounded-full mr-3 flex-shrink-0">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
                                                     <path d="M9 11l3 3L22 4"></path>
                                                     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
                                                   </svg>
                                                 </div>
-                                                <div>
-                                                  <h6 className="font-medium">{quiz.title}</h6>
-                                                  <p className="text-sm text-gray-500">
+                                                <div className="min-w-0 flex-1">
+                                                  <h6 className="font-medium text-sm sm:text-base">{quiz.title}</h6>
+                                                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
                                                     {quiz.questions?.length || 0} questions • {quiz.totalMarks} marks
                                                   </p>
                                                 </div>
                                               </div>
                                               <button 
                                                 onClick={() => setSelectedQuiz(quiz)}
-                                                className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                                                className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors self-start sm:self-center flex-shrink-0"
                                               >
                                                 Take Quiz
                                               </button>
@@ -671,14 +684,14 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
           </div>
 
           {/* Right Column - Enrollment Card */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8">
-              <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-6">
-                <div className="mb-6">
-                  <div className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="lg:col-span-1 order-first lg:order-last">
+            <div className="lg:sticky lg:top-8">
+              <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-4 sm:p-6">
+                <div className="mb-4 sm:mb-6">
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                     Free Course
                   </div>
-                  <p className="text-gray-600">Get lifetime access to this course</p>
+                  <p className="text-gray-600 text-sm sm:text-base">Get lifetime access to this course</p>
                 </div>
 
                 {!isEnrolled ? (
@@ -695,12 +708,50 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                       Enrolled
                     </div>
                     <button 
-                      onClick={() => navigateTo('course-content', { courseId })}
+                      onClick={() => {
+                        setShowLearningContent(true);
+                        setActiveTab('assignments');
+                        // Find the first assignment or quiz
+                        let found = false;
+                        if (course?.modules?.length) {
+                          for (const module of course.modules) {
+                            if (module.lessons?.length) {
+                              for (const lesson of module.lessons) {
+                                if (!found && lesson.assignments && lesson.assignments.length > 0) {
+                                  setSelectedAssignment(lesson.assignments[0]);
+                                  found = true;
+                                  break;
+                                }
+                                if (!found && lesson.quizzes && lesson.quizzes.length > 0) {
+                                  setSelectedQuiz(lesson.quizzes[0]);
+                                  found = true;
+                                  break;
+                                }
+                              }
+                            }
+                            if (found) break;
+                          }
+                        }
+                        setToast({
+                          message: found
+                            ? 'Learning content is now available! Complete the form to get started.'
+                            : 'Learning content is now available! Check the Assignments tab.',
+                          type: 'success'
+                        });
+                        setTimeout(() => {
+                          setToast(null);
+                        }, 3000);
+                      }}
                       className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center"
                     >
                       <Play size={18} className="mr-2" />
                       Start Learning
                     </button>
+                    {!showLearningContent && (
+                      <p className="text-xs text-gray-500 text-center mt-2">
+                        Click "Start Learning" to access assignments and quizzes
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -732,14 +783,14 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
 
       {/* Assignment Modal */}
       {selectedAssignment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-bold text-gray-800">{selectedAssignment.title}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 border-b">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 pr-4">{selectedAssignment.title}</h3>
                 <button 
                   onClick={() => setSelectedAssignment(null)}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-gray-400 hover:text-gray-500 flex-shrink-0"
                 >
                   <X className="h-6 w-6" />
                 </button>
@@ -750,7 +801,7 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
                 </p>
               )}
             </div>
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <div className="prose max-w-none">
                 <h4 className="font-medium text-gray-800 mb-3">Instructions</h4>
                 <p className="text-gray-600 whitespace-pre-line mb-6">{selectedAssignment.description}</p>
@@ -828,25 +879,25 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
 
       {/* Quiz Modal */}
       {selectedQuiz && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-2xl font-bold text-gray-800">{selectedQuiz.title}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 border-b">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 pr-4">{selectedQuiz.title}</h3>
                 <button 
                   onClick={() => setSelectedQuiz(null)}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-gray-400 hover:text-gray-500 flex-shrink-0"
                 >
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <span className="mr-4">{selectedQuiz.questions?.length || 0} Questions</span>
+              <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-600 gap-2 sm:gap-4">
+                <span>{selectedQuiz.questions?.length || 0} Questions</span>
                 <span>{selectedQuiz.totalMarks || 0} Total Marks</span>
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {!isEnrolled ? (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
                   <p className="text-yellow-700">
@@ -946,7 +997,7 @@ const CourseDetails = ({ courseId, onClose, navigateTo }) => {
         </div>
       )}
       
-      <Footer />
+     
     </div>
   );
 };
